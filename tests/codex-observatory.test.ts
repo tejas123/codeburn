@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { buildCodexObservatory, selectDailyForPeriod } from '../dash/src/lib/codex-observatory.js'
+import { groupCodexThreads } from '../dash/src/lib/codex-threads.js'
 
 describe('Codex Observatory view model', () => {
   it('derives token-first totals and model shares from the Codex payload', () => {
@@ -70,5 +71,30 @@ describe('Codex Observatory view model', () => {
     expect(result.cacheShare).toBe(0)
     expect(result.averageTokensPerCall).toBe(0)
     expect(result.models).toEqual([])
+  })
+})
+
+describe('Codex project and thread explorer', () => {
+  it('groups threads by project while keeping the newest thread first', () => {
+    const groups = groupCodexThreads([
+      { sessionId: 'older', project: 'Alpha', title: 'Older', mtimeMs: 10 },
+      { sessionId: 'beta', project: 'Beta', title: 'Beta task', mtimeMs: 30 },
+      { sessionId: 'newer', project: 'Alpha', title: 'Newer', mtimeMs: 20 },
+      { sessionId: 'loose', project: '', title: 'Loose task', mtimeMs: 5 },
+    ])
+
+    expect(groups.map((group) => group.name)).toEqual(['Beta', 'Alpha', 'No project'])
+    expect(groups[1]?.threads.map((thread) => thread.sessionId)).toEqual(['newer', 'older'])
+  })
+
+  it('matches project names, thread titles, and ids', () => {
+    const rows = [
+      { sessionId: 'abc-123', project: 'Codex Usage', title: 'Dashboard explorer', mtimeMs: 20 },
+      { sessionId: 'def-456', project: 'Other', title: 'Unrelated', mtimeMs: 10 },
+    ]
+
+    expect(groupCodexThreads(rows, 'dashboard')[0]?.threads).toHaveLength(1)
+    expect(groupCodexThreads(rows, 'codex usage')[0]?.name).toBe('Codex Usage')
+    expect(groupCodexThreads(rows, 'abc-123')[0]?.threads[0]?.title).toBe('Dashboard explorer')
   })
 })

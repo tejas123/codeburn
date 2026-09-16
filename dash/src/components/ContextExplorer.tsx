@@ -61,7 +61,7 @@ function Chip({ label: lbl, value }: { label: string; value: string }) {
   )
 }
 
-function SessionDetails({ provider, id }: { provider: ContextProvider; id: string }) {
+export function SessionDetails({ provider, id }: { provider: ContextProvider; id: string }) {
   const [scope, setScope] = useState<'effective' | 'full'>('effective')
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['context-tree', provider, id],

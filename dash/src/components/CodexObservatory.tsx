@@ -6,6 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { MetricCard } from '@/components/MetricCard'
 import { DataTable } from '@/components/DataTable'
 import { GranularUsageChart } from '@/components/UsageChart'
+import { CodexProjectExplorer } from '@/components/CodexProjectExplorer'
 
 function pct(value: number): string {
   return `${(value * 100).toFixed(1)}%`
@@ -167,6 +168,8 @@ export function CodexObservatory({ payload, period }: { payload?: Payload; perio
           }))}
         />
       </Card>
+
+      <CodexProjectExplorer period={period} />
     </div>
   )
 }

@@ -337,7 +337,9 @@ export async function runWebDashboard(opts: {
           writeJsonError(res, 400, 'provider must be claude or codex')
           return
         }
-        const refs = provider === 'claude' ? await listRecentTitledSessions(15) : await listRecentCodexSessions(15)
+        const requestedLimit = Number.parseInt(url.searchParams.get('limit') ?? '15', 10)
+        const limit = Number.isFinite(requestedLimit) ? Math.min(500, Math.max(1, requestedLimit)) : 15
+        const refs = provider === 'claude' ? await listRecentTitledSessions(limit) : await listRecentCodexSessions(limit)
         const sessions = refs.map((r) => ({ provider, sessionId: r.sessionId, project: r.project, title: r.title, mtimeMs: r.mtimeMs, sizeBytes: r.sizeBytes }))
         res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' })
         res.end(JSON.stringify({ sessions }))

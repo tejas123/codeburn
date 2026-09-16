@@ -284,8 +284,9 @@ export type ContextTree = {
   fullRows: ContextRow[]
 }
 
-export async function fetchContextSessions(provider: ContextProvider): Promise<ContextSessionInfo[]> {
-  const res = await fetch(`/api/context/sessions?provider=${encodeURIComponent(provider)}`)
+export async function fetchContextSessions(provider: ContextProvider, limit?: number): Promise<ContextSessionInfo[]> {
+  const limitQuery = limit === undefined ? '' : `&limit=${encodeURIComponent(limit)}`
+  const res = await fetch(`/api/context/sessions?provider=${encodeURIComponent(provider)}${limitQuery}`)
   if (!res.ok) throw new Error(`Request failed (${res.status})`)
   const json = (await res.json()) as { sessions: ContextSessionInfo[] }
   return json.sessions ?? []

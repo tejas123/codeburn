@@ -1,4 +1,4 @@
-import { readdir, stat } from 'fs/promises'
+import { readFile, readdir, stat } from 'fs/promises'
 import { existsSync } from 'fs'
 import { basename, join } from 'path'
 import { homedir } from 'os'
@@ -246,25 +246,30 @@ export async function buildCodexContextTree(session: SessionRef): Promise<Contex
 const ROLLOUT_RE = /^rollout-.{19}-(.+)\.jsonl$/
 
 // Mirrors the CODEX_HOME handling of providers/codex.ts.
-function codexSessionsRoot(): string {
-  return join(process.env['CODEX_HOME'] ?? join(homedir(), '.codex'), 'sessions')
+function codexHome(): string {
+  return process.env['CODEX_HOME'] ?? join(homedir(), '.codex')
+}
+
+function codexSessionRoots(): string[] {
+  return ['sessions', 'archived_sessions'].map((folder) => join(codexHome(), folder))
 }
 
 type RolloutFile = { filePath: string; sessionId: string }
 
 async function listRolloutFiles(): Promise<RolloutFile[]> {
-  const root = codexSessionsRoot()
-  if (!existsSync(root)) return []
-  let files: string[]
-  try {
-    files = await readdir(root, { recursive: true })
-  } catch {
-    return []
-  }
   const rollouts: RolloutFile[] = []
-  for (const rel of files) {
-    const match = ROLLOUT_RE.exec(basename(rel))
-    if (match) rollouts.push({ filePath: join(root, rel), sessionId: match[1] })
+  for (const root of codexSessionRoots()) {
+    if (!existsSync(root)) continue
+    let files: string[]
+    try {
+      files = await readdir(root, { recursive: true })
+    } catch {
+      continue
+    }
+    for (const rel of files) {
+      const match = ROLLOUT_RE.exec(basename(rel))
+      if (match) rollouts.push({ filePath: join(root, rel), sessionId: match[1] })
+    }
   }
   return rollouts
 }
@@ -285,7 +290,13 @@ function newestFirst(refs: Array<SessionRef | null>): SessionRef[] {
 
 export async function listCodexSessionRefs(): Promise<SessionRef[]> {
   const files = await listRolloutFiles()
-  return newestFirst(await Promise.all(files.map(statRef)))
+  const refs = newestFirst(await Promise.all(files.map(statRef)))
+  const seen = new Set<string>()
+  return refs.filter((ref) => {
+    if (seen.has(ref.sessionId)) return false
+    seen.add(ref.sessionId)
+    return true
+  })
 }
 
 // Id lookups match filenames directly so only the matching files get stated.
@@ -333,10 +344,21 @@ async function readCodexHeadInfo(ref: SessionRef): Promise<{ project: string; ti
 
 export async function listRecentCodexSessions(limit = 15): Promise<TitledSessionRef[]> {
   const refs = (await listCodexSessionRefs()).slice(0, limit)
+  const titles = new Map<string, string>()
+  try {
+    const index = await readFile(join(codexHome(), 'session_index.jsonl'), 'utf8')
+    for (const line of index.split('\n')) {
+      try {
+        const row = JSON.parse(line) as { id?: unknown; thread_name?: unknown; title?: unknown }
+        const title = typeof row.thread_name === 'string' ? row.thread_name : typeof row.title === 'string' ? row.title : ''
+        if (typeof row.id === 'string' && title) titles.set(row.id, title)
+      } catch { /* tolerate partial or stale index rows */ }
+    }
+  } catch { /* the index is optional */ }
   return Promise.all(
     refs.map(async (ref) => {
       const info = await readCodexHeadInfo(ref)
-      return { ...ref, project: info.project, title: info.title }
+      return { ...ref, project: info.project, title: titles.get(ref.sessionId) ?? info.title }
     }),
   )
 }
