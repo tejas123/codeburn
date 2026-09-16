@@ -659,7 +659,12 @@ export function App() {
                   {/* One panel for whichever insight is showing: the pills are its tabs. */}
                   <div id="insight-panel" role="tabpanel" aria-labelledby={`insight-tab-${activeInsight}`}>
                   {activeInsight === 'projects' && (projectExplorerPayload
-                    ? <ProjectsInsight projects={projectExplorerPayload.current.topProjects ?? []} currency={currency} periodLabel="All time" />
+                    ? <ProjectsInsight
+                        projects={projectExplorerPayload.current.topProjects ?? []}
+                        activeProjects={payload?.current?.topProjects ?? []}
+                        currency={currency}
+                        periodLabel={label}
+                      />
                     : <p className="widget-projects-empty">Loading projects and threads…</p>)}
                   {activeInsight === 'plan' && (
                     <PlanInsight

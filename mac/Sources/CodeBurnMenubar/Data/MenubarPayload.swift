@@ -566,6 +566,7 @@ struct SessionDetailEntry: Codable, Sendable {
 }
 
 struct ProjectEntry: Codable, Sendable {
+    let id: String?
     let name: String
     let cost: Double
     let savingsUSD: Double
@@ -575,10 +576,11 @@ struct ProjectEntry: Codable, Sendable {
     let outputTokens: Int?
     let avgCostPerSession: Double?
     let sessionCountBasis: String?
-    let sessionDetails: [SessionDetailEntry]
+    var sessionDetails: [SessionDetailEntry]
 
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decodeIfPresent(String.self, forKey: .id)
         name = try c.decode(String.self, forKey: .name)
         cost = try c.decode(Double.self, forKey: .cost)
         savingsUSD = try c.decodeIfPresent(Double.self, forKey: .savingsUSD) ?? 0
@@ -592,7 +594,7 @@ struct ProjectEntry: Codable, Sendable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case name, cost, savingsUSD, sessions, inputTokens, cacheReadTokens, outputTokens, avgCostPerSession, sessionCountBasis, sessionDetails
+        case id, name, cost, savingsUSD, sessions, inputTokens, cacheReadTokens, outputTokens, avgCostPerSession, sessionCountBasis, sessionDetails
     }
 }
 

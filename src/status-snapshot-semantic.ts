@@ -20,7 +20,9 @@ import { DAILY_CACHE_VERSION } from './daily-cache.js'
 ///     warm snapshot even once the live payload had the data.
 /// v8: lifetime topProjects retains all projects and session details for the
 ///     widget explorer, including zero-cost threads. Older snapshots cap both.
-export const STATUS_SNAPSHOT_RENDER_VERSION = 8
+/// v9: selected-period topProjects also retains all active projects, including
+///     zero-cost sessions, so the explorer can filter the lifetime thread tree.
+export const STATUS_SNAPSHOT_RENDER_VERSION = 9
 
 /// The semantic key recorded on every status snapshot. A snapshot whose stored
 /// key differs (an older render revision, or a different daily-cache version)

@@ -104,6 +104,21 @@ describe('buildMenubarPayload', () => {
     expect(buildMenubarPayload(period, [], null).current.topProjects).toHaveLength(7)
   })
 
+  it('retains every active project in Today so the explorer can respect the selected period', () => {
+    const period: PeriodData = {
+      ...emptyPeriod('Today'),
+      projects: Array.from({ length: 7 }, (_, index) => ({
+        id: `/work/project-${index}`,
+        name: `Project ${index + 1}`,
+        cost: index === 6 ? 0 : 7 - index,
+        savingsUSD: 0,
+        sessions: 1,
+      })),
+    }
+
+    expect(buildMenubarPayload(period, [], null).current.topProjects.map(project => project.id)).toHaveLength(7)
+  })
+
   it('keeps zero-cost projects with recorded threads in the lifetime explorer', () => {
     const period: PeriodData = {
       ...emptyPeriod('Lifetime'),

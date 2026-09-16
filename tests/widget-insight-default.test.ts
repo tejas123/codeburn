@@ -11,3 +11,7 @@ it('opens the widget on projects and tasks before the trend view', () => {
 it('invalidates older widget payload snapshots that cap projects and threads', () => {
   expect(STATUS_SNAPSHOT_RENDER_VERSION).toBeGreaterThanOrEqual(8)
 })
+
+it('invalidates snapshots that cap selected-period projects at five', () => {
+  expect(STATUS_SNAPSHOT_RENDER_VERSION).toBeGreaterThanOrEqual(9)
+})

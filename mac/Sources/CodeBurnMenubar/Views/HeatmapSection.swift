@@ -82,8 +82,8 @@ struct HeatmapSection: View {
     private var content: some View {
         switch store.selectedInsight {
         case .projects:
-            if let projects = store.projectExplorerProjects {
-                WidgetProjectsInsight(projects: projects, periodLabel: L("All time"))
+            if let projects = selectedPeriodProjects {
+                WidgetProjectsInsight(projects: projects, periodLabel: store.selectionLabel)
             } else {
                 Text(L("Loading projects and threads…"))
                     .font(.system(size: 12))
@@ -111,6 +111,19 @@ struct HeatmapSection: View {
         case .optimize: OptimizeInsight(payload: store.payload)
         }
     }
+
+    private var selectedPeriodProjects: [ProjectEntry]? {
+        guard let lifetimeProjects = store.projectExplorerProjects else { return nil }
+        let allThreadsById = Dictionary(
+            lifetimeProjects.map { ($0.id ?? $0.name, $0.sessionDetails) },
+            uniquingKeysWith: { first, _ in first }
+        )
+        return store.payload.current.topProjects.map { project in
+            var row = project
+            row.sessionDetails = allThreadsById[project.id ?? project.name] ?? project.sessionDetails
+            return row
+        }
+    }
 }
 
 // MARK: - Pill Switcher
@@ -126,7 +139,7 @@ private struct WidgetProjectsInsight: View {
                 Text(L("Projects and threads"))
                     .font(.system(size: 12, weight: .semibold))
                 Spacer()
-                Text(periodLabel)
+                Text("\(periodLabel) · \(L("All threads"))")
                     .font(.system(size: 9))
                     .foregroundStyle(.tertiary)
             }

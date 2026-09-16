@@ -117,6 +117,7 @@ export type PullRequestRow = {
 }
 
 export type ProjectEntry = {
+  id?: string
   name: string
   cost: number
   sessions: number

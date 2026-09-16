@@ -121,7 +121,6 @@ const TOP_MODELS_LIMIT = 20
 const TOP_FINDINGS_LIMIT = 10
 const HISTORY_DAYS_LIMIT = 365
 const SYNTHETIC_MODEL_NAME = '<synthetic>'
-const TOP_PROJECTS_LIMIT = 5
 const TOP_SESSIONS_LIMIT = 3
 const MODEL_EFFICIENCY_LIMIT = 5
 const TOP_REWORKED_FILES_LIMIT = 8
@@ -574,9 +573,8 @@ function buildHistory(daily: DailyHistoryEntry[] | undefined, timeline?: Granula
 
 function buildTopProjects(projects: PeriodData['projects'], includeAll = false): MenubarPayload['current']['topProjects'] {
   return (projects ?? [])
-    .filter(p => includeAll || p.cost > 0 || p.savingsUSD > 0)
+    .filter(p => includeAll || p.cost > 0 || p.savingsUSD > 0 || p.sessions > 0 || (p.sessionDetails?.length ?? 0) > 0)
     .sort((a, b) => (b.cost + b.savingsUSD) - (a.cost + a.savingsUSD))
-    .slice(0, includeAll ? undefined : TOP_PROJECTS_LIMIT)
     .map(p => ({
       ...(p.id ? { id: p.id } : {}),
       name: p.name,
