@@ -34,6 +34,10 @@
 "All" = "全部";
 "Plan" = "套餐";
 "Trend" = "趋势";
+"Projects" = "项目";
+"Projects and tasks" = "项目与任务";
+"No projects recorded for this period." = "此时间段没有记录的项目。";
+"Untitled task" = "未命名任务";
 "Forecast" = "预测";
 "Calendar" = "日历";
 "Pulse" = "效率";

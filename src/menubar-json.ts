@@ -33,7 +33,7 @@ export type PeriodData = {
   /// current tables (#638): their calls contribute $0 to `cost`. Optional so
   /// PeriodData producers that predate the field keep compiling.
   unpricedModels?: Array<{ model: string; calls: number; tokens: number }>
-  projects?: Array<{ id?: string; name: string; cost: number; savingsUSD: number; sessions: number; sessionCountBasis?: SessionCountBasis; sessionDetails?: Array<{ cost: number; savingsUSD: number; calls: number; inputTokens: number; outputTokens: number; date: string; models: Array<{ name: string; cost: number; savingsUSD: number }>; sessionId?: string; provider?: string }> }>
+  projects?: Array<{ id?: string; name: string; cost: number; savingsUSD: number; sessions: number; inputTokens?: number; cacheReadTokens?: number; outputTokens?: number; sessionCountBasis?: SessionCountBasis; sessionDetails?: Array<{ title?: string; cost: number; savingsUSD: number; calls: number; inputTokens: number; cacheReadTokens?: number; outputTokens: number; date: string; models: Array<{ name: string; cost: number; savingsUSD: number }>; sessionId?: string; provider?: string }> }>
   modelEfficiency?: Array<{ name: string; costPerEdit: number | null; oneShotRate: number | null }>
   topSessions?: Array<{ project: string; cost: number; savingsUSD: number; calls: number; date: string; sessionId?: string; provider?: string; projectKey?: string }>
   /// Workflow-intelligence rollups (issue: workflow intelligence). Optional so
@@ -327,6 +327,9 @@ export type MenubarPayload = {
       cost: number
       savingsUSD: number
       sessions: number
+      inputTokens?: number
+      cacheReadTokens?: number
+      outputTokens?: number
       /// Present only when `sessionCountBasis` is `identity` and sessions > 0.
       /// Omitted for lower-bound counts so clients cannot treat cost/count as exact.
       avgCostPerSession?: number
@@ -334,10 +337,12 @@ export type MenubarPayload = {
       /// an exact unique count from surviving source files; `partial` is a lower bound.
       sessionCountBasis?: SessionCountBasis
       sessionDetails: Array<{
+        title?: string
         cost: number
         savingsUSD: number
         calls: number
         inputTokens: number
+        cacheReadTokens?: number
         outputTokens: number
         date: string
         models: Array<{ name: string; cost: number; savingsUSD: number }>
@@ -578,15 +583,20 @@ function buildTopProjects(projects: PeriodData['projects']): MenubarPayload['cur
       cost: p.cost,
       savingsUSD: p.savingsUSD,
       sessions: p.sessions,
+      ...(p.inputTokens !== undefined ? { inputTokens: p.inputTokens } : {}),
+      ...(p.cacheReadTokens !== undefined ? { cacheReadTokens: p.cacheReadTokens } : {}),
+      ...(p.outputTokens !== undefined ? { outputTokens: p.outputTokens } : {}),
       ...(sessionCountIsExact(p.sessionCountBasis) && p.sessions > 0
         ? { avgCostPerSession: p.cost / p.sessions }
         : {}),
       ...(p.sessionCountBasis ? { sessionCountBasis: p.sessionCountBasis } : {}),
       sessionDetails: (p.sessionDetails ?? []).map(s => ({
+        ...(s.title ? { title: s.title } : {}),
         cost: s.cost,
         savingsUSD: s.savingsUSD,
         calls: s.calls,
         inputTokens: s.inputTokens,
+        ...(s.cacheReadTokens !== undefined ? { cacheReadTokens: s.cacheReadTokens } : {}),
         outputTokens: s.outputTokens,
         date: s.date,
         models: s.models,

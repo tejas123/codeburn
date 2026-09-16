@@ -71,13 +71,14 @@ struct HeatmapSection: View {
 
     private func ensureValidSelection() {
         if !visibleModes.contains(store.selectedInsight) {
-            store.selectedInsight = visibleModes.first ?? .trend
+            store.selectedInsight = visibleModes.first ?? .projects
         }
     }
 
     @ViewBuilder
     private var content: some View {
         switch store.selectedInsight {
+        case .projects: WidgetProjectsInsight(projects: store.payload.current.topProjects, periodLabel: store.selectionLabel)
         case .plan:
             if store.selectedProvider == .codex {
                 CodexPlanInsight()
@@ -103,6 +104,83 @@ struct HeatmapSection: View {
 }
 
 // MARK: - Pill Switcher
+
+private struct WidgetProjectsInsight: View {
+    let projects: [ProjectEntry]
+    let periodLabel: String
+    @State private var expanded: String?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text(L("Projects and tasks"))
+                    .font(.system(size: 11, weight: .semibold))
+                Spacer()
+                Text(periodLabel)
+                    .font(.system(size: 9))
+                    .foregroundStyle(.tertiary)
+            }
+            if projects.isEmpty {
+                Text(L("No projects recorded for this period."))
+                    .font(.system(size: 11))
+                    .foregroundStyle(.secondary)
+                    .padding(.vertical, 20)
+            }
+            ForEach(Array(projects.enumerated()), id: \.offset) { index, project in
+                let isOpen = expanded == project.name || (expanded == nil && index == 0)
+                Button {
+                    withAnimation(.easeInOut(duration: 0.18)) {
+                        expanded = isOpen ? "" : project.name
+                    }
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 8, weight: .bold))
+                            .rotationEffect(.degrees(isOpen ? 90 : 0))
+                        Text(projectDisplayName(project.name))
+                            .font(.system(size: 11, weight: .semibold))
+                            .lineLimit(1)
+                        Spacer(minLength: 4)
+                        Text(widgetTokens(project.inputTokens, project.cacheReadTokens, project.outputTokens))
+                            .foregroundStyle(.secondary)
+                        Text(project.cost.asCompactCurrency())
+                            .foregroundStyle(Theme.brandAccent)
+                    }
+                    .font(.system(size: 10, design: .monospaced))
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("\(project.name), \(project.cost.asCompactCurrency()), \(widgetTokens(project.inputTokens, project.cacheReadTokens, project.outputTokens))")
+
+                if isOpen {
+                    ForEach(Array(project.sessionDetails.enumerated()), id: \.offset) { _, task in
+                        HStack(spacing: 6) {
+                            Text(task.title?.isEmpty == false ? task.title! : L("Untitled task"))
+                                .lineLimit(1)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            Text(widgetTokens(task.inputTokens, task.cacheReadTokens, task.outputTokens))
+                                .foregroundStyle(.secondary)
+                            Text(task.cost.asCompactCurrency())
+                                .foregroundStyle(.secondary)
+                        }
+                        .font(.system(size: 9.5))
+                        .padding(.leading, 15)
+                    }
+                }
+                Divider().opacity(0.35)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+private func widgetTokens(_ input: Int?, _ cached: Int?, _ output: Int?) -> String {
+    guard input != nil || cached != nil || output != nil else { return "—" }
+    let total = Double((input ?? 0) + (cached ?? 0) + (output ?? 0))
+    if total >= 1_000_000 { return String(format: "%.1fM tok", total / 1_000_000) }
+    if total >= 1_000 { return String(format: "%.0fK tok", total / 1_000) }
+    return "\(Int(total)) tok"
+}
 
 private struct InsightPillSwitcher: View {
     @Binding var selected: InsightMode

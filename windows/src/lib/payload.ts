@@ -120,15 +120,20 @@ export type ProjectEntry = {
   name: string
   cost: number
   sessions: number
+  inputTokens?: number
+  cacheReadTokens?: number
+  outputTokens?: number
   avgCostPerSession?: number
   sessionCountBasis?: 'identity' | 'partial'
   sessionDetails?: SessionDetailEntry[]
 }
 
 export type SessionDetailEntry = {
+  title?: string
   cost: number
   calls: number
   inputTokens: number
+  cacheReadTokens?: number
   outputTokens: number
   date: string
   models?: Array<{ name: string; cost: number }>

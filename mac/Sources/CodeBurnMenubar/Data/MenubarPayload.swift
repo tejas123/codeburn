@@ -537,27 +537,31 @@ struct SessionModelEntry: Codable, Sendable {
 }
 
 struct SessionDetailEntry: Codable, Sendable {
+    let title: String?
     let cost: Double
     let savingsUSD: Double
     let calls: Int
     let inputTokens: Int
+    let cacheReadTokens: Int?
     let outputTokens: Int
     let date: String
     let models: [SessionModelEntry]
 
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
+        title = try c.decodeIfPresent(String.self, forKey: .title)
         cost = try c.decode(Double.self, forKey: .cost)
         savingsUSD = try c.decodeIfPresent(Double.self, forKey: .savingsUSD) ?? 0
         calls = try c.decode(Int.self, forKey: .calls)
         inputTokens = try c.decode(Int.self, forKey: .inputTokens)
+        cacheReadTokens = try c.decodeIfPresent(Int.self, forKey: .cacheReadTokens)
         outputTokens = try c.decode(Int.self, forKey: .outputTokens)
         date = try c.decode(String.self, forKey: .date)
         models = try c.decodeIfPresent([SessionModelEntry].self, forKey: .models) ?? []
     }
 
     private enum CodingKeys: String, CodingKey {
-        case cost, savingsUSD, calls, inputTokens, outputTokens, date, models
+        case title, cost, savingsUSD, calls, inputTokens, cacheReadTokens, outputTokens, date, models
     }
 }
 
@@ -566,6 +570,9 @@ struct ProjectEntry: Codable, Sendable {
     let cost: Double
     let savingsUSD: Double
     let sessions: Int
+    let inputTokens: Int?
+    let cacheReadTokens: Int?
+    let outputTokens: Int?
     let avgCostPerSession: Double?
     let sessionCountBasis: String?
     let sessionDetails: [SessionDetailEntry]
@@ -576,13 +583,16 @@ struct ProjectEntry: Codable, Sendable {
         cost = try c.decode(Double.self, forKey: .cost)
         savingsUSD = try c.decodeIfPresent(Double.self, forKey: .savingsUSD) ?? 0
         sessions = try c.decode(Int.self, forKey: .sessions)
+        inputTokens = try c.decodeIfPresent(Int.self, forKey: .inputTokens)
+        cacheReadTokens = try c.decodeIfPresent(Int.self, forKey: .cacheReadTokens)
+        outputTokens = try c.decodeIfPresent(Int.self, forKey: .outputTokens)
         avgCostPerSession = try c.decodeIfPresent(Double.self, forKey: .avgCostPerSession)
         sessionCountBasis = try c.decodeIfPresent(String.self, forKey: .sessionCountBasis)
         sessionDetails = try c.decodeIfPresent([SessionDetailEntry].self, forKey: .sessionDetails) ?? []
     }
 
     private enum CodingKeys: String, CodingKey {
-        case name, cost, savingsUSD, sessions, avgCostPerSession, sessionCountBasis, sessionDetails
+        case name, cost, savingsUSD, sessions, inputTokens, cacheReadTokens, outputTokens, avgCostPerSession, sessionCountBasis, sessionDetails
     }
 }
 

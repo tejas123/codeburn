@@ -94,6 +94,24 @@ function cacheDay(projects: NonNullable<DailyEntry['projects']>): DailyEntry {
 describe('buildPayloadProjects identity', () => {
   const home = '/Users/me'
 
+  it('retains task names and cached tokens for the Today widget', () => {
+    const task = session({ id: 'today-task', project: 'example', cost: 2, models: { sonnet: 2 } })
+    task.title = 'Fix the dashboard'
+    task.totalInputTokens = 100
+    task.totalCacheReadTokens = 300
+    task.totalOutputTokens = 20
+    const [project] = buildPayloadProjects([live('example', '/work/example', [task])], null, home)
+    expect(project).toMatchObject({ inputTokens: 100, cacheReadTokens: 300, outputTokens: 20 })
+    expect(project?.sessionDetails?.[0]).toMatchObject({ title: 'Fix the dashboard', cacheReadTokens: 300 })
+  })
+
+  it('uses the first prompt when a provider has no saved task title', () => {
+    const task = session({ id: 'prompt-task', project: 'example', cost: 1, models: { sonnet: 1 } })
+    task.turns = [{ userMessage: '  Build   the new dashboard\nfor today ', assistantCalls: [], timestamp: '2026-09-07T12:00:00Z', sessionId: task.sessionId, category: 'coding', retries: 0, hasEdits: false }]
+    const [project] = buildPayloadProjects([live('example', '/work/example', [task])], null, home)
+    expect(project?.sessionDetails?.[0]?.title).toBe('Build the new dashboard for today')
+  })
+
   it('coalesces provider-split cache slugs for the same cwd with cost/session conservation', () => {
     const shared = '/tmp/shared-vault'
     const other = '/tmp/other-vault'

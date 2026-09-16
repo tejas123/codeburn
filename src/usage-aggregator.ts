@@ -23,6 +23,7 @@ import { callBillableOutputTokens, sessionBillableOutputTokens, inferSessionProv
 import { getDaysInRange, ensureCacheHydrated, loadDailyCache, cachedProjectIdentities, emptyCache, mergeDayEntries, BACKFILL_DAYS, toDateString, type DailyCache, type DailyEntry, type ProjectDayStats, type ProviderDaySlice } from './daily-cache.js'
 import { buildGranularHistory } from './granular-history.js'
 import { spendProjectIdentity } from './spend-flow.js'
+import { readCodexTitleIndex } from './context-tree-codex.js'
 
 // Row caps for the by-PR / by-branch payload aggregations, ranked by cost.
 const TOP_BRANCHES = 15
@@ -1017,10 +1018,12 @@ function sessionDetailsOf(sessions: SessionSummary[]): PayloadSessionDetail[] {
     .sort((a, b) => b.totalCostUSD - a.totalCostUSD)
     .slice(0, 10)
     .map(s => ({
+      ...(sessionTitle(s) ? { title: sessionTitle(s) } : {}),
       cost: s.totalCostUSD,
       savingsUSD: s.totalSavingsUSD,
       calls: s.apiCalls,
       inputTokens: s.totalInputTokens,
+      cacheReadTokens: s.totalCacheReadTokens,
       outputTokens: sessionBillableOutputTokens(s),
       date: s.firstTimestamp?.split('T')[0] ?? '',
       models: Object.entries(s.modelBreakdown)
@@ -1032,6 +1035,11 @@ function sessionDetailsOf(sessions: SessionSummary[]): PayloadSessionDetail[] {
       ...(s.sessionId ? { sessionId: s.sessionId } : {}),
       ...(s.sessionId ? { provider: inferSessionProvider(s) } : {}),
     }))
+}
+
+function sessionTitle(session: SessionSummary): string {
+  const prompt = session.turns.find(turn => turn.userMessage.trim())?.userMessage
+  return (session.title || prompt || '').replace(/\s+/g, ' ').trim().slice(0, 80)
 }
 
 function displayBasename(path: string | undefined, fallback: string, home: string): string {
@@ -1333,6 +1341,11 @@ export function buildPayloadProjects(
         cost,
         savingsUSD,
         sessions,
+        ...(acc.sessions.length ? {
+          inputTokens: acc.sessions.reduce((sum, session) => sum + session.totalInputTokens, 0),
+          cacheReadTokens: acc.sessions.reduce((sum, session) => sum + session.totalCacheReadTokens, 0),
+          outputTokens: acc.sessions.reduce((sum, session) => sum + sessionBillableOutputTokens(session), 0),
+        } : {}),
         sessionCountBasis,
         ...(details.length ? { sessionDetails: details } : {}),
       }
@@ -1581,6 +1594,14 @@ export async function buildMenubarPayloadForRange(periodInfo: PeriodInfo, opts: 
   // (cache ?? live) otherwise. Days recorded before the projects rollup existed
   // have totals but no project split, so this list can sum to less than the
   // headline — an honest gap.
+  const codexTitles = await readCodexTitleIndex()
+  for (const project of scanProjects) {
+    for (const session of project.sessions) {
+      if (inferSessionProvider(session) !== 'codex') continue
+      const title = codexTitles.get(session.sessionId)
+      if (title) session.title = title
+    }
+  }
   currentData.projects = buildPayloadProjects(scanProjects, cacheDaysForPeriod, home)
 
   const effMap = aggregateModelEfficiency(scanProjects)

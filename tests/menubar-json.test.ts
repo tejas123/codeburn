@@ -72,6 +72,24 @@ describe('buildMenubarPayload', () => {
     expect(payload.current.topProjects[0]!.sessionDetails[0]).toMatchObject({ sessionId: 'session-a1', provider: 'claude' })
   })
 
+  it('carries project and task token totals with task names into the widget payload', () => {
+    const period: PeriodData = {
+      ...emptyPeriod('Today'),
+      projects: [{
+        name: 'Example', cost: 2, savingsUSD: 0, sessions: 1,
+        inputTokens: 100, cacheReadTokens: 300, outputTokens: 20,
+        sessionDetails: [{
+          title: 'Fix the dashboard', cost: 2, savingsUSD: 0, calls: 1,
+          inputTokens: 100, cacheReadTokens: 300, outputTokens: 20,
+          date: '2026-09-16', models: [],
+        }],
+      }],
+    }
+    const project = buildMenubarPayload(period, [], null).current.topProjects[0]!
+    expect(project).toMatchObject({ inputTokens: 100, cacheReadTokens: 300, outputTokens: 20 })
+    expect(project.sessionDetails[0]).toMatchObject({ title: 'Fix the dashboard', cacheReadTokens: 300 })
+  })
+
   it('passes the pull-requests payload (models, categories, cap remainder) through verbatim', () => {
     const period: PeriodData = {
       ...emptyPeriod('7 Days'),

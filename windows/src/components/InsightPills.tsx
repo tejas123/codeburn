@@ -1,6 +1,9 @@
-export type InsightMode = 'plan' | 'trend' | 'forecast' | 'calendar' | 'pulse' | 'stats' | 'optimize'
+export type InsightMode = 'projects' | 'plan' | 'trend' | 'forecast' | 'calendar' | 'pulse' | 'stats' | 'optimize'
+
+export const DEFAULT_INSIGHT: InsightMode = 'projects'
 
 export const INSIGHT_LABELS: Record<InsightMode, string> = {
+  projects: 'Projects',
   plan: 'Plan',
   trend: 'Trend',
   forecast: 'Forecast',
@@ -12,12 +15,8 @@ export const INSIGHT_LABELS: Record<InsightMode, string> = {
 
 /// Same order as the macOS InsightMode enum: Plan first when it is visible.
 export const INSIGHT_ORDER: InsightMode[] = [
-  'plan', 'trend', 'forecast', 'calendar', 'pulse', 'stats', 'optimize',
+  'projects', 'plan', 'trend', 'forecast', 'calendar', 'pulse', 'stats', 'optimize',
 ]
-
-export function isInsightMode(value: string | null): value is InsightMode {
-  return value !== null && value in INSIGHT_LABELS
-}
 
 type Props = {
   selected: InsightMode

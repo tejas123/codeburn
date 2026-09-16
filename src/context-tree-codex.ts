@@ -344,21 +344,30 @@ async function readCodexHeadInfo(ref: SessionRef): Promise<{ project: string; ti
 
 export async function listRecentCodexSessions(limit = 15): Promise<TitledSessionRef[]> {
   const refs = (await listCodexSessionRefs()).slice(0, limit)
-  const titles = new Map<string, string>()
-  try {
-    const index = await readFile(join(codexHome(), 'session_index.jsonl'), 'utf8')
-    for (const line of index.split('\n')) {
-      try {
-        const row = JSON.parse(line) as { id?: unknown; thread_name?: unknown; title?: unknown }
-        const title = typeof row.thread_name === 'string' ? row.thread_name : typeof row.title === 'string' ? row.title : ''
-        if (typeof row.id === 'string' && title) titles.set(row.id, title)
-      } catch { /* tolerate partial or stale index rows */ }
-    }
-  } catch { /* the index is optional */ }
+  const titles = await readCodexTitleIndex()
   return Promise.all(
     refs.map(async (ref) => {
       const info = await readCodexHeadInfo(ref)
       return { ...ref, project: info.project, title: titles.get(ref.sessionId) ?? info.title }
     }),
   )
+}
+
+export function parseCodexTitleIndex(index: string): Map<string, string> {
+  const titles = new Map<string, string>()
+  for (const line of index.split('\n')) {
+    try {
+      const row = JSON.parse(line) as { id?: unknown; thread_name?: unknown; title?: unknown }
+      const title = typeof row.thread_name === 'string' ? row.thread_name : typeof row.title === 'string' ? row.title : ''
+      if (typeof row.id === 'string' && title) titles.set(row.id, title)
+    } catch { /* tolerate partial or stale index rows */ }
+  }
+  return titles
+}
+
+export async function readCodexTitleIndex(): Promise<Map<string, string>> {
+  try {
+    const index = await readFile(join(codexHome(), 'session_index.jsonl'), 'utf8')
+    return parseCodexTitleIndex(index)
+  } catch { return new Map() }
 }

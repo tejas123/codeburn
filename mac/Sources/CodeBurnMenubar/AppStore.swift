@@ -93,7 +93,7 @@ final class AppStore {
     private(set) var menubarScope: MenubarScope = MenubarScope.savedMenubarScope() {
         didSet { menubarScope.persistAsMenubarDefault() }
     }
-    var selectedInsight: InsightMode = .trend
+    var selectedInsight: InsightMode = .projects
     var accentPreset: AccentPreset = ThemeState.shared.preset {
         didSet { ThemeState.shared.preset = accentPreset }
     }
@@ -3171,6 +3171,7 @@ enum DisplayMetric: String {
 }
 
 enum InsightMode: String, CaseIterable, Identifiable {
+    case projects = "Projects"
     case plan = "Plan"
     case trend = "Trend"
     case forecast = "Forecast"
@@ -3183,6 +3184,7 @@ enum InsightMode: String, CaseIterable, Identifiable {
     /// Tab label. `rawValue` stays the persisted identity.
     var displayLabel: String {
         switch self {
+        case .projects: L("Projects")
         case .plan: L("Plan")
         case .trend: L("Trend")
         case .forecast: L("Forecast")

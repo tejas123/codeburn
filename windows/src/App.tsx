@@ -7,7 +7,7 @@ import type { CurrencyState } from './lib/currency'
 import { USD, formatCurrency, formatTokens, plural, trayBadgeText } from './lib/currency'
 import { PayloadCache, sameSelection, selectionKey, type Selection } from './lib/cache'
 import { relativePast } from './lib/dates'
-import { applyTheme, readSetting, writeSetting } from './lib/settings'
+import { applyTheme } from './lib/settings'
 import {
   DEFAULT_SETTINGS, MENUBAR_PERIODS, MENUBAR_SUFFIX, cacheThemeAndAccent, nextTheme, subscribeSettings, themeCycleLabel,
   writeSettings, type AppSettings, type ThemeChoice,
@@ -18,7 +18,8 @@ import { EMPTY_QUOTA, refreshQuota, refreshQuotaIfDue, subscribeQuota, worstSeve
 import { AgentTabStrip, ALL_PROVIDER, providerLabel, providerTabs } from './components/AgentTabStrip'
 import type { Provider } from './components/AgentTabStrip'
 import { ModelsSection } from './components/ModelsSection'
-import { InsightPills, INSIGHT_ORDER, isInsightMode, type InsightMode } from './components/InsightPills'
+import { InsightPills, DEFAULT_INSIGHT, INSIGHT_ORDER, type InsightMode } from './components/InsightPills'
+import { ProjectsInsight } from './components/ProjectsInsight'
 import { TrendInsight, trendDayCount } from './components/TrendInsight'
 import { CalendarInsight } from './components/CalendarInsight'
 import { OptimizeInsight } from './components/OptimizeInsight'
@@ -118,10 +119,7 @@ export function App() {
   const [currency, setCurrency] = useState<CurrencyState>(USD)
   const [overlay, setOverlay] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [insight, setInsight] = useState<InsightMode>(() => {
-    const saved = readSetting('insight')
-    return isInsightMode(saved) ? saved : 'trend'
-  })
+  const [insight, setInsight] = useState<InsightMode>(DEFAULT_INSIGHT)
   const [cliStatus, setCliStatus] = useState<CliStatus | null>(null)
   const [cliChecking, setCliChecking] = useState(false)
   const [version, setVersion] = useState('')
@@ -557,7 +555,6 @@ export function App() {
 
   const selectInsight = (mode: InsightMode) => {
     setInsight(mode)
-    writeSetting('insight', mode)
   }
 
   const tabs = providerTabs(todayPayload)
@@ -571,7 +568,7 @@ export function App() {
     () => INSIGHT_ORDER.filter(m => m !== 'plan' || planVisible),
     [planVisible],
   )
-  const activeInsight = visibleModes.includes(insight) ? insight : 'trend'
+  const activeInsight = visibleModes.includes(insight) ? insight : DEFAULT_INSIGHT
 
   const cliBlocked = cliStatus !== null && (!cliStatus.found || !cliStatus.compatible)
   // The version gate above is what keeps these fields present; the optional reads are the
@@ -640,6 +637,7 @@ export function App() {
                   <InsightPills selected={activeInsight} onSelect={selectInsight} modes={visibleModes} />
                   {/* One panel for whichever insight is showing: the pills are its tabs. */}
                   <div id="insight-panel" role="tabpanel" aria-labelledby={`insight-tab-${activeInsight}`}>
+                  {activeInsight === 'projects' && <ProjectsInsight projects={payload?.current?.topProjects ?? []} currency={currency} periodLabel={label} />}
                   {activeInsight === 'plan' && (
                     <PlanInsight
                       payload={payload}

@@ -40,6 +40,10 @@
 "All" = "All";
 "Plan" = "Plan";
 "Trend" = "Trend";
+"Projects" = "Projects";
+"Projects and tasks" = "Projects and tasks";
+"No projects recorded for this period." = "No projects recorded for this period.";
+"Untitled task" = "Untitled task";
 "Forecast" = "Forecast";
 "Calendar" = "Calendar";
 "Pulse" = "Pulse";
