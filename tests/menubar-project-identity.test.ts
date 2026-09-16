@@ -94,6 +94,14 @@ function cacheDay(projects: NonNullable<DailyEntry['projects']>): DailyEntry {
 describe('buildPayloadProjects identity', () => {
   const home = '/Users/me'
 
+  it('retains every recorded thread for a project', () => {
+    const threads = Array.from({ length: 12 }, (_, index) => session({
+      id: `thread-${index}`, project: 'example', cost: 1, models: {},
+    }))
+    const [project] = buildPayloadProjects([live('example', '/work/example', threads)], null, home)
+    expect(project?.sessionDetails).toHaveLength(12)
+  })
+
   it('retains task names and cached tokens for the Today widget', () => {
     const task = session({ id: 'today-task', project: 'example', cost: 2, models: { sonnet: 2 } })
     task.title = 'Fix the dashboard'

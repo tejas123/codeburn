@@ -41,8 +41,6 @@ struct MenuBarContent: View {
                                 .padding(.bottom, 10)
                                 .zIndex(10)
                             Divider().opacity(0.5)
-                            ActivitySection()
-                            Divider().opacity(0.5)
                             ModelsSection()
                             PullRequestsSection()
                             Divider().opacity(0.5)
@@ -99,6 +97,7 @@ struct MenuBarContent: View {
     }
 
     private var isFilteredEmpty: Bool {
+        if store.selectedInsight == .projects { return false }
         guard store.selectedProvider != .all else { return false }
         // Plan-capable providers keep their sections visible so the Plan tab
         // (live subscription quota) stays reachable even on days with no

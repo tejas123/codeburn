@@ -572,11 +572,11 @@ function buildHistory(daily: DailyHistoryEntry[] | undefined, timeline?: Granula
   return { daily: trimmed, ...(timeline ? { timeline } : {}) }
 }
 
-function buildTopProjects(projects: PeriodData['projects']): MenubarPayload['current']['topProjects'] {
+function buildTopProjects(projects: PeriodData['projects'], includeAll = false): MenubarPayload['current']['topProjects'] {
   return (projects ?? [])
-    .filter(p => p.cost > 0 || p.savingsUSD > 0)
+    .filter(p => includeAll || p.cost > 0 || p.savingsUSD > 0)
     .sort((a, b) => (b.cost + b.savingsUSD) - (a.cost + a.savingsUSD))
-    .slice(0, TOP_PROJECTS_LIMIT)
+    .slice(0, includeAll ? undefined : TOP_PROJECTS_LIMIT)
     .map(p => ({
       ...(p.id ? { id: p.id } : {}),
       name: p.name,
@@ -702,7 +702,7 @@ export function buildMenubarPayload(
       localModelSavings: breakdowns?.localModelSavings ?? { totalUSD: 0, calls: 0, byModel: [], byProvider: [] },
       providers: buildProviders(providers),
       providerDetails: buildProviderDetails(providers),
-      topProjects: buildTopProjects(current.projects ?? []),
+      topProjects: buildTopProjects(current.projects ?? [], current.label === 'Lifetime'),
       modelEfficiency: buildModelEfficiency(current.modelEfficiency ?? []),
       topSessions: buildTopSessions(current.topSessions ?? []),
       workflow: buildWorkflow(current.workflow),

@@ -30,7 +30,6 @@ import { PlanInsight, planTarget } from './components/PlanInsight'
 import { FindingsSection } from './components/FindingsSection'
 import { PullRequestsSection } from './components/PullRequestsSection'
 import { ToolingSection } from './components/ToolingSection'
-import { ActivitySection } from './components/ActivitySection'
 import { LoadingOverlay } from './components/LoadingOverlay'
 import { EmptyProviderState } from './components/EmptyProviderState'
 import { NoDataState } from './components/NoDataState'
@@ -115,6 +114,7 @@ export function App() {
   const [claudeConfigSourceId, setClaudeConfigSourceId] = useState<string | null>(null)
   const [provider, setProvider] = useState<Provider>(ALL_PROVIDER)
   const [payload, setPayload] = useState<MenubarPayload | null>(null)
+  const [projectExplorerPayload, setProjectExplorerPayload] = useState<MenubarPayload | null>(null)
   const [todayPayload, setTodayPayload] = useState<MenubarPayload | null>(null)
   const [currency, setCurrency] = useState<CurrencyState>(USD)
   const [overlay, setOverlay] = useState(false)
@@ -301,6 +301,27 @@ export function App() {
     // The selection is a fresh object each render, so the key string is what changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectionKeyValue, cliReady, fetchKey])
+
+  useEffect(() => {
+    if (!cliReady || !popoverVisible || insight !== 'projects') return
+    const key: Selection = {
+      period: 'lifetime', provider, days: [], scope: 'local', claudeConfigSourceId,
+    }
+    const cached = payloadCache.get(key)
+    setProjectExplorerPayload(cached)
+    if (cached && payloadCache.age(key) <= STALE_MS) return
+    let cancelled = false
+    void invoke<MenubarPayload>('fetch_payload', {
+      period: 'lifetime', provider, days: [], scope: 'local',
+      claudeConfigSource: claudeConfigSourceId, includeOptimize: false,
+    }).then(result => {
+      payloadCache.set(key, result)
+      if (!cancelled) setProjectExplorerPayload(result)
+    }).catch(() => {
+      if (!cancelled) setProjectExplorerPayload(cached)
+    })
+    return () => { cancelled = true }
+  }, [cliReady, popoverVisible, insight, provider, claudeConfigSourceId])
 
   useEffect(() => {
     const unlistenRefresh = listen('codeburn://refresh', () => userRefresh())
@@ -573,9 +594,9 @@ export function App() {
   const cliBlocked = cliStatus !== null && (!cliStatus.found || !cliStatus.compatible)
   // The version gate above is what keeps these fields present; the optional reads are the
   // backstop that turns a surprising payload into an empty state rather than a blank window.
-  const isFilteredEmpty = payload !== null && provider !== ALL_PROVIDER
+  const isFilteredEmpty = activeInsight !== 'projects' && payload !== null && provider !== ALL_PROVIDER
     && (payload.current?.cost ?? 0) <= 0 && (payload.current?.calls ?? 0) === 0
-  const neverAnyData = payload !== null && provider === ALL_PROVIDER
+  const neverAnyData = activeInsight !== 'projects' && payload !== null && provider === ALL_PROVIDER
     && (payload.current?.calls ?? 0) === 0 && (payload.current?.sessions ?? 0) === 0
     && (payload.history?.daily?.length ?? 0) === 0
 
@@ -637,7 +658,9 @@ export function App() {
                   <InsightPills selected={activeInsight} onSelect={selectInsight} modes={visibleModes} />
                   {/* One panel for whichever insight is showing: the pills are its tabs. */}
                   <div id="insight-panel" role="tabpanel" aria-labelledby={`insight-tab-${activeInsight}`}>
-                  {activeInsight === 'projects' && <ProjectsInsight projects={payload?.current?.topProjects ?? []} currency={currency} periodLabel={label} />}
+                  {activeInsight === 'projects' && (projectExplorerPayload
+                    ? <ProjectsInsight projects={projectExplorerPayload.current.topProjects ?? []} currency={currency} periodLabel="All time" />
+                    : <p className="widget-projects-empty">Loading projects and threads…</p>)}
                   {activeInsight === 'plan' && (
                     <PlanInsight
                       payload={payload}
@@ -664,7 +687,6 @@ export function App() {
                 </div>
                 {payload?.current && (
                   <>
-                    <ActivitySection payload={payload} currency={currency} />
                     <ModelsSection
                       models={payload.current.topModels}
                       inputTokens={payload.current.inputTokens}

@@ -90,6 +90,31 @@ describe('buildMenubarPayload', () => {
     expect(project.sessionDetails[0]).toMatchObject({ title: 'Fix the dashboard', cacheReadTokens: 300 })
   })
 
+  it('keeps every project in the lifetime payload for the widget explorer', () => {
+    const period: PeriodData = {
+      ...emptyPeriod('Lifetime'),
+      projects: Array.from({ length: 7 }, (_, index) => ({
+        name: `Project ${index + 1}`,
+        cost: 7 - index,
+        savingsUSD: 0,
+        sessions: 1,
+      })),
+    }
+
+    expect(buildMenubarPayload(period, [], null).current.topProjects).toHaveLength(7)
+  })
+
+  it('keeps zero-cost projects with recorded threads in the lifetime explorer', () => {
+    const period: PeriodData = {
+      ...emptyPeriod('Lifetime'),
+      projects: [{
+        name: 'Free model project', cost: 0, savingsUSD: 0, sessions: 1,
+        sessionDetails: [{ cost: 0, savingsUSD: 0, calls: 1, inputTokens: 10, outputTokens: 2, date: '2026-09-16', models: [] }],
+      }],
+    }
+    expect(buildMenubarPayload(period, [], null).current.topProjects).toHaveLength(1)
+  })
+
   it('passes the pull-requests payload (models, categories, cap remainder) through verbatim', () => {
     const period: PeriodData = {
       ...emptyPeriod('7 Days'),

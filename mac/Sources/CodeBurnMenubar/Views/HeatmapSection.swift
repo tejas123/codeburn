@@ -49,6 +49,9 @@ struct HeatmapSection: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .onAppear { ensureValidSelection() }
         .onChange(of: store.selectedProvider) { _, _ in ensureValidSelection() }
+        .task(id: "\(store.selectedInsight.rawValue):\(store.selectedProvider.rawValue):\(store.selectedClaudeConfigSourceId ?? "")") {
+            if store.selectedInsight == .projects { await store.refreshProjectExplorer() }
+        }
     }
 
     private var bindingMode: Binding<InsightMode> {
@@ -78,7 +81,14 @@ struct HeatmapSection: View {
     @ViewBuilder
     private var content: some View {
         switch store.selectedInsight {
-        case .projects: WidgetProjectsInsight(projects: store.payload.current.topProjects, periodLabel: store.selectionLabel)
+        case .projects:
+            if let projects = store.projectExplorerProjects {
+                WidgetProjectsInsight(projects: projects, periodLabel: L("All time"))
+            } else {
+                Text(L("Loading projects and threads…"))
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
+            }
         case .plan:
             if store.selectedProvider == .codex {
                 CodexPlanInsight()
@@ -113,16 +123,16 @@ private struct WidgetProjectsInsight: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text(L("Projects and tasks"))
-                    .font(.system(size: 11, weight: .semibold))
+                Text(L("Projects and threads"))
+                    .font(.system(size: 12, weight: .semibold))
                 Spacer()
                 Text(periodLabel)
                     .font(.system(size: 9))
                     .foregroundStyle(.tertiary)
             }
             if projects.isEmpty {
-                Text(L("No projects recorded for this period."))
-                    .font(.system(size: 11))
+                Text(L("No projects recorded."))
+                    .font(.system(size: 12))
                     .foregroundStyle(.secondary)
                     .padding(.vertical, 20)
             }
@@ -138,8 +148,8 @@ private struct WidgetProjectsInsight: View {
                             .font(.system(size: 8, weight: .bold))
                             .rotationEffect(.degrees(isOpen ? 90 : 0))
                         Text(projectDisplayName(project.name))
-                            .font(.system(size: 11, weight: .semibold))
-                            .lineLimit(1)
+                            .font(.system(size: 13, weight: .semibold))
+                            .lineLimit(2)
                         Spacer(minLength: 4)
                         Text(widgetTokens(project.inputTokens, project.cacheReadTokens, project.outputTokens))
                             .foregroundStyle(.secondary)
@@ -155,15 +165,16 @@ private struct WidgetProjectsInsight: View {
                 if isOpen {
                     ForEach(Array(project.sessionDetails.enumerated()), id: \.offset) { _, task in
                         HStack(spacing: 6) {
-                            Text(task.title?.isEmpty == false ? task.title! : L("Untitled task"))
-                                .lineLimit(1)
+                            Text(task.title?.isEmpty == false ? task.title! : L("Untitled thread"))
+                                .font(.system(size: 12))
+                                .lineLimit(2)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                             Text(widgetTokens(task.inputTokens, task.cacheReadTokens, task.outputTokens))
                                 .foregroundStyle(.secondary)
                             Text(task.cost.asCompactCurrency())
                                 .foregroundStyle(.secondary)
                         }
-                        .font(.system(size: 9.5))
+                        .font(.system(size: 10))
                         .padding(.leading, 15)
                     }
                 }

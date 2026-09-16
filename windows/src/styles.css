@@ -905,18 +905,18 @@ code { font-family: var(--font-mono); }
 .insight-pill-active, .insight-pill-active:hover { background: var(--brand-accent); color: #fff; }
 
 .widget-projects { display: flex; flex-direction: column; gap: 7px; }
-.widget-projects-heading { display: flex; justify-content: space-between; align-items: baseline; font-size: 11px; }
+.widget-projects-heading { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; }
 .widget-projects-heading span, .widget-projects-empty { color: var(--label-3); font-size: 10px; }
 .widget-projects-empty { margin: 12px 0; }
 .widget-project { border-bottom: 1px solid var(--separator-soft); padding-bottom: 6px; }
-.widget-project-row { display: flex; align-items: center; gap: 6px; width: 100%; padding: 5px 0; border: 0; background: transparent; color: var(--label); text-align: left; cursor: pointer; font-size: 11px; }
+.widget-project-row { display: flex; align-items: center; gap: 6px; width: 100%; padding: 7px 0; border: 0; background: transparent; color: var(--label); text-align: left; cursor: pointer; font-size: 13px; }
 .widget-project-row strong { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .widget-project-chevron { width: 8px; color: var(--label-3); }
 .widget-project-tokens, .widget-project-cost, .widget-task small { flex: none; font-family: var(--font-mono); font-size: 10px; font-variant-numeric: tabular-nums; }
 .widget-project-tokens, .widget-task small { color: var(--label-3); }
 .widget-project-cost { color: var(--brand-accent); }
 .widget-task-list { display: flex; flex-direction: column; gap: 4px; margin-left: 14px; }
-.widget-task { display: flex; align-items: baseline; gap: 6px; font-size: 10px; }
+.widget-task { display: flex; align-items: baseline; gap: 6px; padding: 2px 0; font-size: 12px; }
 .widget-task > span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .insight-header {

@@ -20,8 +20,8 @@ export function ProjectsInsight({ projects, currency, periodLabel }: Props) {
 
   return (
     <div className="widget-projects">
-      <div className="widget-projects-heading"><strong>Projects and tasks</strong><span>{periodLabel}</span></div>
-      {projects.length === 0 && <p className="widget-projects-empty">No projects recorded for this period.</p>}
+      <div className="widget-projects-heading"><strong>Projects and threads</strong><span>{periodLabel}</span></div>
+      {projects.length === 0 && <p className="widget-projects-empty">No projects recorded.</p>}
       {projects.map((project, index) => {
         const isOpen = expanded === project.name || (expanded === null && index === 0)
         return (
@@ -33,10 +33,10 @@ export function ProjectsInsight({ projects, currency, periodLabel }: Props) {
               <span className="widget-project-cost">{formatCompactCurrency(project.cost, currency)}</span>
             </button>
             {isOpen && <div className="widget-task-list">
-              {(project.sessionDetails ?? []).length === 0 && <span className="widget-projects-empty">No task details recorded.</span>}
+              {(project.sessionDetails ?? []).length === 0 && <span className="widget-projects-empty">No threads recorded.</span>}
               {(project.sessionDetails ?? []).map((task, taskIndex) => (
                 <div className="widget-task" key={`${task.date}:${taskIndex}`}>
-                  <span title={task.title ?? undefined}>{task.title || 'Untitled task'}</span>
+                  <span title={task.title ?? undefined}>{task.title || 'Untitled thread'}</span>
                   <small>{tokenLabel(task.inputTokens, task.cacheReadTokens, task.outputTokens)}</small>
                   <small>{formatCompactCurrency(task.cost, currency)}</small>
                 </div>

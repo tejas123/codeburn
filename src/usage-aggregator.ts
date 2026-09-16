@@ -1016,7 +1016,6 @@ function applyProviderSessionCounts(
 function sessionDetailsOf(sessions: SessionSummary[]): PayloadSessionDetail[] {
   return [...sessions]
     .sort((a, b) => b.totalCostUSD - a.totalCostUSD)
-    .slice(0, 10)
     .map(s => ({
       ...(sessionTitle(s) ? { title: sessionTitle(s) } : {}),
       cost: s.totalCostUSD,

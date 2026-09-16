@@ -18,7 +18,9 @@ import { DAILY_CACHE_VERSION } from './daily-cache.js'
 /// v7: providerDetails also carries per-provider cacheReadTokens, which a v6
 ///     record predates — the dock's cache-read row would stay hidden behind a
 ///     warm snapshot even once the live payload had the data.
-export const STATUS_SNAPSHOT_RENDER_VERSION = 7
+/// v8: lifetime topProjects retains all projects and session details for the
+///     widget explorer, including zero-cost threads. Older snapshots cap both.
+export const STATUS_SNAPSHOT_RENDER_VERSION = 8
 
 /// The semantic key recorded on every status snapshot. A snapshot whose stored
 /// key differs (an older render revision, or a different daily-cache version)
