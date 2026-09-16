@@ -720,7 +720,7 @@ export function App() {
         loading={overlay}
         onRefresh={userRefresh}
         onExport={runExport}
-        onOpenReport={() => openTerminal(['report'])}
+        onOpenReport={() => { invoke('open_web_dashboard').catch(err => setError(String(err))) }}
         onToggleTheme={cycleTheme}
         onQuit={() => invoke('quit_app').catch(() => {})}
         themeLabel={themeCycleLabel(settings.theme)}

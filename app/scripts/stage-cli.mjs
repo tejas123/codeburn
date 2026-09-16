@@ -24,6 +24,7 @@ import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import electronPath from 'electron'
+import { verifyDashboard } from './verify-dashboard.mjs'
 
 const here = dirname(fileURLToPath(import.meta.url)) // app/scripts
 const appDir = join(here, '..') // app
@@ -32,7 +33,7 @@ const dist = join(root, 'dist')
 const rootModules = join(root, 'node_modules')
 const stage = join(appDir, 'build', 'cli')
 
-for (const f of ['cli.js', 'main.js', 'parse-worker.js']) {
+for (const f of ['cli.js', 'main.js', 'parse-worker.js', 'dash/index.html']) {
   if (!existsSync(join(dist, f))) {
     throw new Error(`stage-cli: ${join(dist, f)} is missing — build the root CLI first`)
   }
@@ -42,6 +43,7 @@ rmSync(stage, { recursive: true, force: true })
 mkdirSync(join(stage, 'dist'), { recursive: true })
 
 copyFileSync(join(root, 'package.json'), join(stage, 'package.json'))
+cpSync(join(dist, 'dash'), join(stage, 'dist', 'dash'), { recursive: true })
 copyFileSync(join(dist, 'cli.js'), join(stage, 'dist', 'cli.js'))
 copyFileSync(join(dist, 'main.js'), join(stage, 'dist', 'main.js'))
 // The cold-parse worker pool resolves this as a sibling of the bundle it runs
@@ -151,6 +153,7 @@ Object.assign(electronEnv, {
 })
 
 try {
+  await verifyDashboard(electronPath, launchPath, electronEnv)
   const modelsHelp = execFileSync(electronPath, [launchPath, 'models', '--help'], {
     env: electronEnv,
     encoding: 'utf8',

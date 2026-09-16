@@ -5,6 +5,8 @@
 mod autostart;
 mod cli;
 mod config;
+mod dashboard;
+mod dashboard_url;
 mod dock;
 mod fx;
 mod glance;
@@ -242,6 +244,7 @@ pub fn run() {
             commands::currency,
             commands::set_currency,
             commands::open_terminal_command,
+            commands::open_web_dashboard,
             commands::open_claude_login,
             commands::export_usage,
             commands::quit_app,
@@ -418,7 +421,11 @@ fn on_tray_menu_event(app: &AppHandle, event: tauri::menu::MenuEvent) {
         // pane and the anchor tells it to check straight away.
         "check_updates" => open_settings(app, "about#check"),
         "report" => {
-            let _ = cli::spawn_in_terminal(app, &["report"]);
+            tauri::async_runtime::spawn(async {
+                if let Err(error) = dashboard::open().await {
+                    crate::log_line!("codeburn-menubar: could not open dashboard: {}", error);
+                }
+            });
         }
         _ => {}
     }
@@ -1008,6 +1015,11 @@ mod commands {
             return Err("unsupported command".into());
         }
         crate::cli::spawn_in_terminal(&app, &args).map_err(|e| e.to_string())
+    }
+
+    #[tauri::command]
+    pub async fn open_web_dashboard() -> Result<(), String> {
+        crate::dashboard::open().await.map_err(|error| error.to_string())
     }
 
     #[tauri::command]
