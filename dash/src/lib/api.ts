@@ -237,6 +237,46 @@ export async function pairDevice(d: DiscoveredDevice): Promise<{ ok: boolean; na
 
 export type ContextProvider = 'claude' | 'codex'
 
+export type CodexExplorerModel = {
+  name: string
+  effort: string
+  inputTokens: number
+  cachedInputTokens: number
+  outputTokens: number
+  reasoningTokens: number
+  totalTokens: number
+  cost: number
+}
+
+export type CodexExplorerSession = {
+  id: string
+  title: string
+  project: string
+  machine: string
+  updated: string
+  inputTokens: number
+  cachedInputTokens: number
+  outputTokens: number
+  reasoningTokens: number
+  totalTokens: number
+  cost: number
+  models: CodexExplorerModel[]
+}
+
+export async function fetchCodexExplorer(period: Period): Promise<CodexExplorerSession[]> {
+  const res = await fetch(`/api/codex/explorer?period=${encodeURIComponent(period)}`)
+  if (!res.ok) throw new Error(`Request failed (${res.status})`)
+  const json = (await res.json()) as { sessions: CodexExplorerSession[] }
+  return json.sessions ?? []
+}
+
+export async function fetchCodexExplorerDetail(id: string, period: Period): Promise<CodexExplorerModel[]> {
+  const res = await fetch(`/api/codex/explorer/detail?id=${encodeURIComponent(id)}&period=${encodeURIComponent(period)}`)
+  if (!res.ok) throw new Error(`Request failed (${res.status})`)
+  const json = (await res.json()) as { models: CodexExplorerModel[] }
+  return json.models ?? []
+}
+
 export type ContextSessionInfo = {
   provider: ContextProvider
   sessionId: string

@@ -169,7 +169,7 @@ export function CodexObservatory({ payload, period }: { payload?: Payload; perio
         />
       </Card>
 
-      <CodexProjectExplorer period={period} />
+      <CodexProjectExplorer period={period} periodLabel={current.label} />
     </div>
   )
 }

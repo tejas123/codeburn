@@ -21,6 +21,9 @@ import { ShareController } from './sharing/share-controller.js'
 import { sanitizeForSharing } from './sharing/sanitize.js'
 import { buildContextTree, findClaudeSession, listRecentTitledSessions, snapshotRows, type ContextTreeResult, type SessionRef } from './context-tree.js'
 import { buildCodexContextTree, findCodexSession, listRecentCodexSessions } from './context-tree-codex.js'
+import { parseAllSessions } from './parser.js'
+import { buildCodexExplorerPayload } from './codex-explorer.js'
+import { readCodexEffortBreakdown } from './codex-explorer-detail.js'
 
 function readBody(req: import('http').IncomingMessage): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -162,6 +165,23 @@ export async function runWebDashboard(opts: {
   // Context trees re-read a whole transcript (up to 100MB), so cache each by
   // file version. Keyed on mtime: an active session invalidates itself.
   const contextTreeCache = new Map<string, Promise<ContextTreeResult>>()
+  const codexExplorerCache = new Map<string, { at: number; payload: Promise<ReturnType<typeof buildCodexExplorerPayload>> }>()
+  const getCodexExplorer = (period: string, from?: string, to?: string) => {
+    const key = `${period}|${from ?? ''}|${to ?? ''}`
+    const hit = codexExplorerCache.get(key)
+    if (hit && Date.now() - hit.at < LOCAL_PAYLOAD_TTL_MS) return hit.payload
+    const payload = (async () => {
+      const periodInfo = periodInfoFromQuery({ period, from, to }, opts.period)
+      const [projects, titled] = await Promise.all([
+        parseAllSessions(periodInfo.range, 'codex'),
+        listRecentCodexSessions(1000),
+      ])
+      return buildCodexExplorerPayload(projects, new Map(titled.map((session) => [session.sessionId, session.title])))
+    })()
+    codexExplorerCache.set(key, { at: Date.now(), payload })
+    void payload.catch(() => codexExplorerCache.delete(key))
+    return payload
+  }
   const getContextTree = (provider: 'claude' | 'codex', ref: SessionRef): Promise<ContextTreeResult> => {
     const key = `${provider}:${ref.sessionId}:${ref.mtimeMs}`
     const hit = contextTreeCache.get(key)
@@ -227,6 +247,40 @@ export async function runWebDashboard(opts: {
         }
         res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' })
         res.end(JSON.stringify(payload))
+        return
+      }
+
+      if (url.pathname === '/api/codex/explorer') {
+        const period = url.searchParams.get('period') ?? opts.period
+        const from = url.searchParams.get('from') ?? opts.from
+        const to = url.searchParams.get('to') ?? opts.to
+        try {
+          const payload = await getCodexExplorer(period, from, to)
+          res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' })
+          res.end(JSON.stringify(payload))
+        } catch (err) {
+          if (!(err instanceof UsageQueryError)) throw err
+          writeJsonError(res, 400, err.message)
+        }
+        return
+      }
+
+      if (url.pathname === '/api/codex/explorer/detail') {
+        const id = url.searchParams.get('id') ?? ''
+        const period = url.searchParams.get('period') ?? opts.period
+        if (!id) {
+          writeJsonError(res, 400, 'id is required')
+          return
+        }
+        const ref = await findCodexSession(id)
+        if (!ref) {
+          writeJsonError(res, 404, `no codex session ${id}`)
+          return
+        }
+        const periodInfo = periodInfoFromQuery({ period, from: opts.from, to: opts.to }, opts.period)
+        const models = await readCodexEffortBreakdown(ref.filePath, periodInfo.range)
+        res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' })
+        res.end(JSON.stringify({ models }))
         return
       }
 
