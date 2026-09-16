@@ -482,7 +482,7 @@
 "Terminal" = "Terminal";
 "Open commands in" = "Open commands in";
 "%@ (not installed)" = "%@ (not installed)";
-"Where Full Report and Optimize open. If the chosen app isn't installed CodeBurn falls back to Terminal; if that's missing too the command runs in the background. Only terminals that can script a command into a live window are listed." = "Where Full Report and Optimize open. If the chosen app isn't installed CodeBurn falls back to Terminal; if that's missing too the command runs in the background. Only terminals that can script a command into a live window are listed.";
+"Where Optimize opens. Full Report opens the web dashboard in your default browser. If the chosen terminal isn't installed CodeBurn falls back to Terminal; if that's missing too the command runs in the background. Only terminals that can script a command into a live window are listed." = "Where Optimize opens. Full Report opens the web dashboard in your default browser. If the chosen terminal isn't installed CodeBurn falls back to Terminal; if that's missing too the command runs in the background. Only terminals that can script a command into a live window are listed.";
 "Alerts" = "Alerts";
 "Daily budget" = "Daily budget";
 "Off" = "Off";

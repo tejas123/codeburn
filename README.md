@@ -350,7 +350,7 @@ defaults write org.agentseal.codeburn-menubar CodeBurnMenubarRefreshSeconds -int
 
 Seconds between refreshes: `60`, `300`, or `900`; `0` is Manual and `-1` is Auto. Takes effect on the next refresh tick, no relaunch needed.
 
-**Preferred terminal** decides where Full Report and Optimize open. Set it in Settings → General → Terminal, or from Terminal:
+**Full Report** opens the browser dashboard. **Preferred terminal** decides where Optimize opens. Set it in Settings → General → Terminal, or from Terminal:
 
 ```bash
 defaults write org.agentseal.codeburn-menubar CodeBurnPreferredTerminal -string iterm2

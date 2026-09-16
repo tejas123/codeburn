@@ -769,7 +769,7 @@ struct FooterBar: View {
                 .foregroundStyle(.tertiary)
 
             Button { openReport() } label: {
-                Label(L("Full Report"), systemImage: "terminal")
+                Label(L("Full Report"), systemImage: "globe")
                     .font(.system(size: 11, weight: .semibold))
                     .labelStyle(.titleAndIcon)
             }
@@ -782,7 +782,7 @@ struct FooterBar: View {
     }
 
     private func openReport() {
-        TerminalLauncher.open(subcommand: ["report"])
+        WebDashboardLauncher.open()
     }
 
     private func refreshNow() {

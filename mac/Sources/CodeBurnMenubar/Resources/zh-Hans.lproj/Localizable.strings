@@ -474,7 +474,7 @@
 "Terminal" = "终端";
 "Open commands in" = "命令打开方式";
 "%@ (not installed)" = "%@（未安装）";
-"Where Full Report and Optimize open. If the chosen app isn't installed CodeBurn falls back to Terminal; if that's missing too the command runs in the background. Only terminals that can script a command into a live window are listed." = "“完整报告”和“优化”的打开位置。如果所选应用未安装，CodeBurn 会回退到“终端”；若“终端”也不存在，命令将在后台运行。此处仅列出能够将命令写入活动窗口的终端。";
+"Where Optimize opens. Full Report opens the web dashboard in your default browser. If the chosen terminal isn't installed CodeBurn falls back to Terminal; if that's missing too the command runs in the background. Only terminals that can script a command into a live window are listed." = "“优化”将在所选终端中打开。“完整报告”将在默认浏览器中打开网页仪表板。如果所选终端未安装，CodeBurn 会回退到“终端”；若“终端”也不存在，命令将在后台运行。此处仅列出能够将命令写入活动窗口的终端。";
 "Alerts" = "提醒";
 "Daily budget" = "每日预算";
 "Off" = "关闭";

@@ -572,7 +572,7 @@ private struct GeneralSettingsTab: View {
                     }
                 }
                 .pickerStyle(.menu)
-                Text(L("Where Full Report and Optimize open. If the chosen app isn't installed CodeBurn falls back to Terminal; if that's missing too the command runs in the background. Only terminals that can script a command into a live window are listed."))
+                Text(L("Where Optimize opens. Full Report opens the web dashboard in your default browser. If the chosen terminal isn't installed CodeBurn falls back to Terminal; if that's missing too the command runs in the background. Only terminals that can script a command into a live window are listed."))
                     .font(.system(size: 11))
                     .foregroundStyle(.secondary)
             }
