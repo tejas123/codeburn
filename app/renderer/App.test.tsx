@@ -276,7 +276,7 @@ describe('App shortcuts', () => {
       period === 'week' ? pendingWeek : Promise.resolve(thirtyDays))
 
     render(<App />)
-    expect(await screen.findByText('$30.00')).toBeInTheDocument()
+    expect(await within(await screen.findByLabelText('Period totals')).findByText('$30.00')).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('tab', { name: '7D' }))
     await waitFor(() => expect(mocks.getOverview).toHaveBeenCalledWith('week', 'all'))
@@ -366,13 +366,21 @@ describe('App shortcuts', () => {
     await waitFor(() => expect(mocks.getOverview).toHaveBeenCalledWith('today', 'all'))
   })
 
-  it('falls back to 7 days when the boot payload shows today has no sessions', async () => {
+  it('opens Today instead of restoring an ordinary previous browsing period', async () => {
+    localStorage.removeItem('codeburn.defaultPeriod')
+    localStorage.setItem('codeburn.navState.v1', JSON.stringify({ section: 'overview', period: 'lifetime', provider: 'all', range: null, filters: {}, sessionId: null, sort: 'cost', visibleCount: 25 }))
+    render(<App />)
+    await waitFor(() => expect(mocks.getOverview).toHaveBeenCalledWith('today', 'all'))
+  })
+
+  it('keeps Today when the boot payload has no sessions', async () => {
     localStorage.removeItem('codeburn.defaultPeriod')
     const empty = overviewPayload()
     mocks.getOverview.mockResolvedValue({ ...empty, current: { ...empty.current, sessions: 0 } })
     render(<App />)
     await waitFor(() => expect(mocks.getOverview).toHaveBeenCalledWith('today', 'all'))
-    await waitFor(() => expect(mocks.getOverview).toHaveBeenCalledWith('week', 'all'))
+    await act(async () => { await Promise.resolve() })
+    expect(mocks.getOverview).not.toHaveBeenCalledWith('week', 'all')
   })
 
   it('leaves a persisted default period alone when today has no sessions', async () => {

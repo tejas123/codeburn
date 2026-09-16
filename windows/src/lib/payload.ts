@@ -6,6 +6,9 @@ export type MenubarPayload = {
   current: {
     label: string
     cost: number
+    unpricedModels?: Array<{ model: string; calls: number; tokens: number }>
+    cacheReadTokens?: number
+    cacheWriteTokens?: number
     calls: number
     sessions: number
     sessionCountBasis?: 'identity' | 'partial'
@@ -75,6 +78,9 @@ export type CombinedUsage = {
     sessions: number
     inputTokens: number
     outputTokens: number
+    totalTokens?: number
+    cacheReadTokens?: number
+    cacheCreateTokens?: number
     deviceCount: number
     reachableCount: number
   }
@@ -117,6 +123,8 @@ export type PullRequestRow = {
 }
 
 export type ProjectEntry = {
+  unpricedModels?: string[]
+  cacheWriteTokens?: number
   id?: string
   name: string
   cost: number
@@ -130,6 +138,10 @@ export type ProjectEntry = {
 }
 
 export type SessionDetailEntry = {
+  sessionId?: string
+  provider?: string
+  unpricedModels?: string[]
+  cacheWriteTokens?: number
   title?: string
   cost: number
   calls: number

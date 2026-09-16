@@ -411,24 +411,6 @@ final class AppStore {
         cache[todayAllKey]?.payload
     }
 
-    private var projectExplorerKey: PayloadCacheKey {
-        PayloadCacheKey(
-            scope: .local,
-            period: .lifetime,
-            provider: selectedProvider,
-            day: nil,
-            claudeConfigSourceId: selectedClaudeConfigSourceId
-        )
-    }
-
-    var projectExplorerProjects: [ProjectEntry]? {
-        cache[projectExplorerKey]?.payload.current.topProjects
-    }
-
-    func refreshProjectExplorer() async {
-        _ = await refreshQuietly(key: projectExplorerKey, includeOptimize: false)
-    }
-
     var todayPayloadAgeSeconds: Int? {
         guard let cached = cache[todayAllKey] else { return nil }
         return Int(Date().timeIntervalSince(cached.fetchedAt))

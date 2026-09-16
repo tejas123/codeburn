@@ -22,7 +22,8 @@ import { DAILY_CACHE_VERSION } from './daily-cache.js'
 ///     widget explorer, including zero-cost threads. Older snapshots cap both.
 /// v9: selected-period topProjects also retains all active projects, including
 ///     zero-cost sessions, so the explorer can filter the lifetime thread tree.
-export const STATUS_SNAPSHOT_RENDER_VERSION = 9
+/// v10: projects and threads carry cache writes, unpriced models, and all model costs.
+export const STATUS_SNAPSHOT_RENDER_VERSION = 10
 
 /// The semantic key recorded on every status snapshot. A snapshot whose stored
 /// key differs (an older render revision, or a different daily-cache version)

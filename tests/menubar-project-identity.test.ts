@@ -113,6 +113,24 @@ describe('buildPayloadProjects identity', () => {
     expect(project?.sessionDetails?.[0]).toMatchObject({ title: 'Fix the dashboard', cacheReadTokens: 300 })
   })
 
+  it('keeps all model costs and cache-write tokens for thread drill-down', () => {
+    const task = session({ id: 'detail', project: 'example', cost: 10,
+      models: { a: 4, b: 3, c: 2, d: 1 } })
+    task.totalCacheWriteTokens = 250
+    const [project] = buildPayloadProjects([live('example', '/work/example', [task])], null, home)
+    expect(project?.cacheWriteTokens).toBe(250)
+    expect(project?.sessionDetails?.[0]?.cacheWriteTokens).toBe(250)
+    expect(project?.sessionDetails?.[0]?.models).toHaveLength(4)
+  })
+
+  it('marks an unknown-priced model on the thread and its project', () => {
+    const task = session({ id: 'unpriced', project: 'example', cost: 0,
+      models: { 'unlisted-today-widget-model': 0 } })
+    const [project] = buildPayloadProjects([live('example', '/work/example', [task])], null, home)
+    expect(project?.unpricedModels).toEqual(['unlisted-today-widget-model'])
+    expect(project?.sessionDetails?.[0]?.unpricedModels).toEqual(['unlisted-today-widget-model'])
+  })
+
   it('uses the first prompt when a provider has no saved task title', () => {
     const task = session({ id: 'prompt-task', project: 'example', cost: 1, models: { sonnet: 1 } })
     task.turns = [{ userMessage: '  Build   the new dashboard\nfor today ', assistantCalls: [], timestamp: '2026-09-07T12:00:00Z', sessionId: task.sessionId, category: 'coding', retries: 0, hasEdits: false }]

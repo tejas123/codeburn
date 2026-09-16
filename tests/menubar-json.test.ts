@@ -77,17 +77,17 @@ describe('buildMenubarPayload', () => {
       ...emptyPeriod('Today'),
       projects: [{
         name: 'Example', cost: 2, savingsUSD: 0, sessions: 1,
-        inputTokens: 100, cacheReadTokens: 300, outputTokens: 20,
+        inputTokens: 100, cacheReadTokens: 300, cacheWriteTokens: 50, outputTokens: 20, unpricedModels: ["unknown-widget-model"],
         sessionDetails: [{
           title: 'Fix the dashboard', cost: 2, savingsUSD: 0, calls: 1,
-          inputTokens: 100, cacheReadTokens: 300, outputTokens: 20,
+          inputTokens: 100, cacheReadTokens: 300, cacheWriteTokens: 50, outputTokens: 20, unpricedModels: ["unknown-widget-model"],
           date: '2026-09-16', models: [],
         }],
       }],
     }
     const project = buildMenubarPayload(period, [], null).current.topProjects[0]!
-    expect(project).toMatchObject({ inputTokens: 100, cacheReadTokens: 300, outputTokens: 20 })
-    expect(project.sessionDetails[0]).toMatchObject({ title: 'Fix the dashboard', cacheReadTokens: 300 })
+    expect(project).toMatchObject({ inputTokens: 100, cacheReadTokens: 300, cacheWriteTokens: 50, outputTokens: 20, unpricedModels: ["unknown-widget-model"] })
+    expect(project.sessionDetails[0]).toMatchObject({ title: 'Fix the dashboard', cacheReadTokens: 300, cacheWriteTokens: 50, unpricedModels: ['unknown-widget-model'] })
   })
 
   it('keeps every project in the lifetime payload for the widget explorer', () => {

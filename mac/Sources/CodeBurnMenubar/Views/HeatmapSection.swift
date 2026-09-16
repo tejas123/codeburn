@@ -39,19 +39,18 @@ private let gregorianCalendar: Calendar = {
 /// Switchable insight visualizations: trend, calendar, forecast, pulse, stats,
 /// optimize, plus provider-specific plan views.
 struct HeatmapSection: View {
+    var showsSwitcher = true
     @Environment(AppStore.self) private var store
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            InsightPillSwitcher(selected: bindingMode, visibleModes: visibleModes)
+            if showsSwitcher { InsightPillSwitcher(selected: bindingMode, visibleModes: visibleModes) }
             content
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .onAppear { ensureValidSelection() }
         .onChange(of: store.selectedProvider) { _, _ in ensureValidSelection() }
-        .task(id: "\(store.selectedInsight.rawValue):\(store.selectedProvider.rawValue):\(store.selectedClaudeConfigSourceId ?? "")") {
-            if store.selectedInsight == .projects { await store.refreshProjectExplorer() }
-        }
+
     }
 
     private var bindingMode: Binding<InsightMode> {
@@ -82,13 +81,9 @@ struct HeatmapSection: View {
     private var content: some View {
         switch store.selectedInsight {
         case .projects:
-            if let projects = selectedPeriodProjects {
-                WidgetProjectsInsight(projects: projects, periodLabel: store.selectionLabel)
-            } else {
-                Text(L("Loading projects and threads…"))
-                    .font(.system(size: 12))
-                    .foregroundStyle(.secondary)
-            }
+            WidgetProjectsSection(current: store.payload.current, periodLabel: store.selectionLabel,
+                                  combinedScope: store.activeScope == .combined)
+                .id("\(store.selectionLabel):\(store.selectedProvider.rawValue):\(store.selectedClaudeConfigSourceId ?? "")")
         case .plan:
             if store.selectedProvider == .codex {
                 CodexPlanInsight()
@@ -112,99 +107,9 @@ struct HeatmapSection: View {
         }
     }
 
-    private var selectedPeriodProjects: [ProjectEntry]? {
-        guard let lifetimeProjects = store.projectExplorerProjects else { return nil }
-        let allThreadsById = Dictionary(
-            lifetimeProjects.map { ($0.id ?? $0.name, $0.sessionDetails) },
-            uniquingKeysWith: { first, _ in first }
-        )
-        return store.payload.current.topProjects.map { project in
-            var row = project
-            row.sessionDetails = allThreadsById[project.id ?? project.name] ?? project.sessionDetails
-            return row
-        }
-    }
 }
 
 // MARK: - Pill Switcher
-
-private struct WidgetProjectsInsight: View {
-    let projects: [ProjectEntry]
-    let periodLabel: String
-    @State private var expanded: String?
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text(L("Projects and threads"))
-                    .font(.system(size: 12, weight: .semibold))
-                Spacer()
-                Text("\(periodLabel) · \(L("All threads"))")
-                    .font(.system(size: 9))
-                    .foregroundStyle(.tertiary)
-            }
-            if projects.isEmpty {
-                Text(L("No projects recorded."))
-                    .font(.system(size: 12))
-                    .foregroundStyle(.secondary)
-                    .padding(.vertical, 20)
-            }
-            ForEach(Array(projects.enumerated()), id: \.offset) { index, project in
-                let isOpen = expanded == project.name || (expanded == nil && index == 0)
-                Button {
-                    withAnimation(.easeInOut(duration: 0.18)) {
-                        expanded = isOpen ? "" : project.name
-                    }
-                } label: {
-                    HStack(spacing: 6) {
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 8, weight: .bold))
-                            .rotationEffect(.degrees(isOpen ? 90 : 0))
-                        Text(projectDisplayName(project.name))
-                            .font(.system(size: 13, weight: .semibold))
-                            .lineLimit(2)
-                        Spacer(minLength: 4)
-                        Text(widgetTokens(project.inputTokens, project.cacheReadTokens, project.outputTokens))
-                            .foregroundStyle(.secondary)
-                        Text(project.cost.asCompactCurrency())
-                            .foregroundStyle(Theme.brandAccent)
-                    }
-                    .font(.system(size: 10, design: .monospaced))
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("\(project.name), \(project.cost.asCompactCurrency()), \(widgetTokens(project.inputTokens, project.cacheReadTokens, project.outputTokens))")
-
-                if isOpen {
-                    ForEach(Array(project.sessionDetails.enumerated()), id: \.offset) { _, task in
-                        HStack(spacing: 6) {
-                            Text(task.title?.isEmpty == false ? task.title! : L("Untitled thread"))
-                                .font(.system(size: 12))
-                                .lineLimit(2)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            Text(widgetTokens(task.inputTokens, task.cacheReadTokens, task.outputTokens))
-                                .foregroundStyle(.secondary)
-                            Text(task.cost.asCompactCurrency())
-                                .foregroundStyle(.secondary)
-                        }
-                        .font(.system(size: 10))
-                        .padding(.leading, 15)
-                    }
-                }
-                Divider().opacity(0.35)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-}
-
-private func widgetTokens(_ input: Int?, _ cached: Int?, _ output: Int?) -> String {
-    guard input != nil || cached != nil || output != nil else { return "—" }
-    let total = Double((input ?? 0) + (cached ?? 0) + (output ?? 0))
-    if total >= 1_000_000 { return String(format: "%.1fM tok", total / 1_000_000) }
-    if total >= 1_000 { return String(format: "%.0fK tok", total / 1_000) }
-    return "\(Int(total)) tok"
-}
 
 private struct InsightPillSwitcher: View {
     @Binding var selected: InsightMode

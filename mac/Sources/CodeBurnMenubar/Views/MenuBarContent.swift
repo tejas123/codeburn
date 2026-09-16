@@ -4,6 +4,7 @@ import SwiftUI
 /// Popover root. Assembles all sections matching the HTML design spec.
 struct MenuBarContent: View {
     @Environment(AppStore.self) private var store
+    @State private var showsHistory = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -11,43 +12,31 @@ struct MenuBarContent: View {
 
             Divider()
 
-            if showAgentTabs {
-                AgentTabStrip()
-                Divider()
-            }
-
             ZStack {
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: 0) {
-                        HeroSection()
-                        if store.selectedPayloadMayBeIncomplete {
-                            Text(L("This total may be incomplete."))
-                                .font(.system(size: 11))
-                                .foregroundStyle(Color.secondary.opacity(0.75))
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.horizontal, 14)
-                                .padding(.bottom, 6)
+                        WidgetUsageSummary(showsHistory: $showsHistory)
+                        if showsHistory {
+                            PeriodSegmentedControl()
+                            ScopeSegmentedControl()
+                            if showAgentTabs { AgentTabStrip() }
                         }
-                        Divider().opacity(0.5)
-                        PeriodSegmentedControl()
-                        ScopeSegmentedControl()
                         Divider().opacity(0.5)
                         if isFilteredEmpty {
                             EmptyProviderState(provider: store.selectedProvider, periodLabel: store.selectionLabel)
                         } else {
-                            HeatmapSection()
-                                .padding(.horizontal, 14)
-                                .padding(.top, 10)
-                                .padding(.bottom, 10)
+                            HeatmapSection(showsSwitcher: showsHistory)
+                                .padding(16)
                                 .zIndex(10)
-                            Divider().opacity(0.5)
-                            ModelsSection()
-                            PullRequestsSection()
-                            Divider().opacity(0.5)
-                            ToolingSection()
-                            Divider().opacity(0.5)
-                            FindingsSection()
+                            if showsHistory && store.selectedInsight != .projects {
+                                Divider().opacity(0.5)
+                                ModelsSection()
+                                PullRequestsSection()
+                                ToolingSection()
+                                FindingsSection()
+                            }
                         }
+                        WidgetFreshness(payload: store.payload)
                     }
                 }
 
@@ -93,6 +82,9 @@ struct MenuBarContent: View {
             CLIUpdateBanner()
 
             StarBanner()
+        }
+        .onChange(of: showsHistory) { _, visible in
+            if !visible { store.selectedInsight = .projects }
         }
     }
 
@@ -144,7 +136,7 @@ private struct ScopeSegmentedControl: View {
                         store.switchTo(scope: scope)
                     } label: {
                         Text(scope.displayLabel)
-                            .font(.system(size: 11, weight: .medium))
+                            .font(.system(size: 13, weight: .medium))
                             .foregroundStyle(isActive ? AnyShapeStyle(.primary) : AnyShapeStyle(.secondary))
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 4)

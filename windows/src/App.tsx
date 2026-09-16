@@ -114,11 +114,11 @@ export function App() {
   const [claudeConfigSourceId, setClaudeConfigSourceId] = useState<string | null>(null)
   const [provider, setProvider] = useState<Provider>(ALL_PROVIDER)
   const [payload, setPayload] = useState<MenubarPayload | null>(null)
-  const [projectExplorerPayload, setProjectExplorerPayload] = useState<MenubarPayload | null>(null)
   const [todayPayload, setTodayPayload] = useState<MenubarPayload | null>(null)
   const [currency, setCurrency] = useState<CurrencyState>(USD)
   const [overlay, setOverlay] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [explorerOpenCount, setExplorerOpenCount] = useState(0)
   const [insight, setInsight] = useState<InsightMode>(DEFAULT_INSIGHT)
   const [cliStatus, setCliStatus] = useState<CliStatus | null>(null)
   const [cliChecking, setCliChecking] = useState(false)
@@ -303,30 +303,13 @@ export function App() {
   }, [selectionKeyValue, cliReady, fetchKey])
 
   useEffect(() => {
-    if (!cliReady || !popoverVisible || insight !== 'projects') return
-    const key: Selection = {
-      period: 'lifetime', provider, days: [], scope: 'local', claudeConfigSourceId,
-    }
-    const cached = payloadCache.get(key)
-    setProjectExplorerPayload(cached)
-    if (cached && payloadCache.age(key) <= STALE_MS) return
-    let cancelled = false
-    void invoke<MenubarPayload>('fetch_payload', {
-      period: 'lifetime', provider, days: [], scope: 'local',
-      claudeConfigSource: claudeConfigSourceId, includeOptimize: false,
-    }).then(result => {
-      payloadCache.set(key, result)
-      if (!cancelled) setProjectExplorerPayload(result)
-    }).catch(() => {
-      if (!cancelled) setProjectExplorerPayload(cached)
-    })
-    return () => { cancelled = true }
-  }, [cliReady, popoverVisible, insight, provider, claudeConfigSourceId])
-
-  useEffect(() => {
     const unlistenRefresh = listen('codeburn://refresh', () => userRefresh())
     const unlistenShown = listen('codeburn://shown', () => {
       setPopoverVisible(true)
+      setPeriod('today')
+      setDays([])
+      setInsight(DEFAULT_INSIGHT)
+      setExplorerOpenCount(count => count + 1)
       // The popover is hidden rather than closed, so it mounts once a launch: an open is
       // this event, not this component appearing.
       track('popover_open')
@@ -634,6 +617,7 @@ export function App() {
               dailyBudget={isTokenMetric ? budgets.tokens : budgets.cost}
               combinedScope={effectiveScope === 'combined'}
             />
+            <details className="widget-secondary"><summary>History and filters</summary>
             <PeriodTabs
               selected={period}
               days={days}
@@ -648,6 +632,8 @@ export function App() {
               onConfig={chooseClaudeConfig}
             />
 
+            </details>
+
             {isFilteredEmpty ? (
               <EmptyProviderState label={providerLabel(tabs, provider)} period={period} />
             ) : neverAnyData ? (
@@ -655,13 +641,15 @@ export function App() {
             ) : (
               <>
                 <div className="insight-area">
-                  <InsightPills selected={activeInsight} onSelect={selectInsight} modes={visibleModes} />
+                  <details className="widget-secondary"><summary>More insights</summary><InsightPills selected={activeInsight} onSelect={selectInsight} modes={visibleModes} /></details>
                   {/* One panel for whichever insight is showing: the pills are its tabs. */}
                   <div id="insight-panel" role="tabpanel" aria-labelledby={`insight-tab-${activeInsight}`}>
-                  {activeInsight === 'projects' && (projectExplorerPayload
+                  {activeInsight === 'projects' && (payload
                     ? <ProjectsInsight
-                        projects={projectExplorerPayload.current.topProjects ?? []}
-                        activeProjects={payload?.current?.topProjects ?? []}
+                        key={`${selectionKeyValue}:${explorerOpenCount}`}
+                        activeProjects={payload.current.topProjects ?? []}
+                        totalCost={payload.current.cost}
+                        localOnly={effectiveScope === 'combined'}
                         currency={currency}
                         periodLabel={label}
                       />
@@ -692,6 +680,7 @@ export function App() {
                 </div>
                 {payload?.current && (
                   <>
+                    <details className="widget-secondary"><summary>Usage details and diagnostics</summary>
                     <ModelsSection
                       models={payload.current.topModels}
                       inputTokens={payload.current.inputTokens}
@@ -702,6 +691,7 @@ export function App() {
                     <PullRequestsSection payload={payload} currency={currency} />
                     <ToolingSection payload={payload} currency={currency} />
                     <FindingsSection payload={payload} currency={currency} onOpenTerminal={openTerminal} />
+                    </details>
                   </>
                 )}
               </>

@@ -1023,12 +1023,16 @@ function sessionDetailsOf(sessions: SessionSummary[]): PayloadSessionDetail[] {
       calls: s.apiCalls,
       inputTokens: s.totalInputTokens,
       cacheReadTokens: s.totalCacheReadTokens,
+      cacheWriteTokens: s.totalCacheWriteTokens,
+      unpricedModels: findUnpricedModels(Object.entries(s.modelBreakdown).map(([model, data]) => ({
+        model, calls: data.calls, cost: data.costUSD,
+        tokens: data.tokens.inputTokens + data.tokens.outputTokens + data.tokens.cacheReadInputTokens + data.tokens.cacheCreationInputTokens,
+      }))).map(entry => entry.model),
       outputTokens: sessionBillableOutputTokens(s),
       date: s.firstTimestamp?.split('T')[0] ?? '',
       models: Object.entries(s.modelBreakdown)
         .map(([name, m]) => ({ name, cost: m.costUSD, savingsUSD: m.savingsUSD }))
-        .sort((a, b) => b.cost - a.cost)
-        .slice(0, 3),
+        .sort((a, b) => b.cost - a.cost),
       // Drill-through identity (additive, optional): provider + session id let
       // the desktop open the exact session, not a lookalike row.
       ...(s.sessionId ? { sessionId: s.sessionId } : {}),
@@ -1343,10 +1347,14 @@ export function buildPayloadProjects(
         ...(acc.sessions.length ? {
           inputTokens: acc.sessions.reduce((sum, session) => sum + session.totalInputTokens, 0),
           cacheReadTokens: acc.sessions.reduce((sum, session) => sum + session.totalCacheReadTokens, 0),
+          cacheWriteTokens: acc.sessions.reduce((sum, session) => sum + session.totalCacheWriteTokens, 0),
           outputTokens: acc.sessions.reduce((sum, session) => sum + sessionBillableOutputTokens(session), 0),
         } : {}),
         sessionCountBasis,
-        ...(details.length ? { sessionDetails: details } : {}),
+        ...(details.length ? {
+          sessionDetails: details,
+          unpricedModels: [...new Set(details.flatMap(detail => detail.unpricedModels ?? []))],
+        } : {}),
       }
     })
     .sort((a, b) => b.cost - a.cost)

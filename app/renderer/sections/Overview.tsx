@@ -1,3 +1,4 @@
+import { PeriodProjects } from '../components/PeriodProjects'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import gsap from 'gsap'
 
@@ -842,6 +843,8 @@ export function OverviewContent({
   return (
     <div className="ov-dashboard">
       {error && <StaleBanner error={error} />}
+      <PeriodProjects key={`${heroSelectionKey}:${localDateKey(now)}`} label={combined ? `Combined · ${data.current.label}` : data.current.label} cost={heroCost} tokens={combined ? combined.combined.totalTokens : data.current.inputTokens + data.current.cacheReadTokens + data.current.cacheWriteTokens + data.current.outputTokens} projects={data.current.topProjects} combined={!!combined} unpriced={!!data.current.unpricedModels?.length} />
+      <details className="ov-secondary"><summary>History & advanced diagnostics</summary>
       <div className="ov-card ov-hero-split" aria-label="Key performance indicators">
         <div className="ov-hero-main">
           <div className="ov-hero-top"><span className="ov-label">{combined ? `Combined · ${data.current.label}` : data.current.label}</span><span className="ov-streak"><b>{streakDays(data.history.daily, now)}</b>-day streak</span></div>
@@ -931,6 +934,7 @@ export function OverviewContent({
           </div>
         </div>
       </div>
+      </details>
     </div>
   )
 }

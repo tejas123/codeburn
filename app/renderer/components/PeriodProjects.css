@@ -1,0 +1,36 @@
+.period-projects { color: inherit; font-size: 13px; margin-bottom: 20px; }
+.period-headline, .period-tree, .period-detail { border: 1px solid color-mix(in srgb, currentColor 15%, transparent); border-radius: 12px; padding: 22px; margin-bottom: 14px; }
+.period-headline h2 { font-size: 16px; font-weight: 600; margin: 0 0 18px; }
+.period-totals { display: flex; gap: 64px; flex-wrap: wrap; }
+.period-totals div { display: grid; gap: 6px; }
+.period-totals strong { font-size: 32px; font-weight: 600; line-height: 1.15; font-variant-numeric: tabular-nums; }
+.period-headline p, .period-detail p { opacity: .7; margin: 14px 0 0; font-size: 13px; }
+.period-tree-heading { display: flex; justify-content: space-between; gap: 16px; align-items: center; margin-bottom: 12px; }
+.period-tree h3, .period-detail h3 { font-size: 16px; font-weight: 600; margin: 0; }
+.period-tree-heading > span { font-size: 12px; opacity: .7; }
+.period-project { border-top: 1px solid color-mix(in srgb, currentColor 12%, transparent); }
+.period-project-row, .period-thread { display: flex; justify-content: space-between; gap: 20px; width: 100%; color: inherit; background: transparent; border: 0; text-align: left; padding: 14px 4px; cursor: pointer; border-radius: 5px; }
+.period-project-row:hover, .period-thread:hover { background: color-mix(in srgb, currentColor 5%, transparent); }
+.period-projects button:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+.period-name { display: grid; gap: 6px; min-width: 0; }
+.period-name strong { font-size: 16px; font-weight: 600; overflow-wrap: anywhere; }
+.period-name small { font-size: 13px; opacity: .7; }
+.period-cost { min-width: 115px; text-align: right; font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.period-share { display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-top: 7px; font-size: 12px; font-weight: 400; }
+.period-bar { height: 4px; width: 64px; background: color-mix(in srgb, currentColor 12%, transparent); border-radius: 4px; overflow: hidden; }
+.period-bar > span { display: block; height: 100%; background: currentColor; }
+.period-threads { margin: 0 0 10px 16px; padding-left: 16px; border-left: 1px solid color-mix(in srgb, currentColor 15%, transparent); }
+.period-thread .period-name strong { font-size: 15px; font-weight: 500; }
+.period-back { color: inherit; font: inherit; background: transparent; border: 0; padding: 0; margin-bottom: 18px; cursor: pointer; }
+.period-detail h3 { margin-top: 6px; font-size: 20px; }
+.period-detail-totals { display: flex; gap: 24px; margin: 20px 0; font-size: 16px; flex-wrap: wrap; }
+.period-token-breakdown { display: flex; gap: 28px; flex-wrap: wrap; margin: 20px 0; }
+.period-token-breakdown dt { opacity: .7; }.period-token-breakdown dd { font-size: 16px; margin: 6px 0 0; }
+.period-detail h4 { font-size: 15px; margin: 24px 0 12px; }.period-models { list-style: none; padding: 0; margin: 0; }
+.period-models li { display: flex; justify-content: space-between; gap: 20px; padding: 12px 0; border-top: 1px solid color-mix(in srgb, currentColor 12%, transparent); }
+@media (max-width: 480px) { .period-headline, .period-tree, .period-detail { padding: 16px; }.period-totals { gap: 32px; }.period-cost { min-width: 88px; }.period-bar { width: 40px; } }
+
+.ov-secondary > summary { cursor: pointer; font-size: 13px; padding: 10px 0 20px; }
+.ov-secondary[open] { display: grid; gap: 12px; }
+
+.period-totals > div + div strong { font-size: 20px; }

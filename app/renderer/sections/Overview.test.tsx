@@ -193,8 +193,8 @@ describe('Overview', () => {
 
     // The hero shows the SELECTED PERIOD's total (current.cost) + label, not
     // just today — so a 30-day view reads $312.40 under "Last 30 days".
-    expect(await screen.findByText('$312.40')).toBeInTheDocument()
-    expect(screen.getByText('Last 30 days')).toBeInTheDocument()
+    expect(await within(await screen.findByLabelText('Key performance indicators')).findByText('$312.40')).toBeInTheDocument()
+    expect(within(screen.getByLabelText('Key performance indicators')).getByText('Last 30 days')).toBeInTheDocument()
     expect(container.querySelector('.ov-streak')).toHaveTextContent('30-day streak')
 
     // The unified hero keeps spend/savings, activity, and efficiency in one
@@ -287,7 +287,7 @@ describe('Overview', () => {
 
     const { container } = render(<Overview period="lifetime" provider="all" />)
 
-    expect(await screen.findByText('Lifetime')).toBeInTheDocument()
+    expect(await within(await screen.findByLabelText('Key performance indicators')).findByText('Lifetime')).toBeInTheDocument()
     const ticks = [...container.querySelectorAll('.ov-xax span')]
     expect(ticks).toHaveLength(6)
     expect(ticks[0]).toHaveTextContent(new Date(
@@ -305,7 +305,7 @@ describe('Overview', () => {
 
       const { container } = render(<Overview period="30days" provider="all" />)
 
-      expect(await screen.findByText('$312.40')).toBeInTheDocument()
+      expect(await within(await screen.findByLabelText('Key performance indicators')).findByText('$312.40')).toBeInTheDocument()
       const scroller = container.querySelector('.ov-heatmap-scroll') as HTMLDivElement
       expect(scroller.scrollLeft).toBe(200)
 
@@ -343,7 +343,7 @@ describe('Overview', () => {
 
       const { container } = render(<Overview period="30days" provider="all" />)
 
-      expect(await screen.findByText('$312.40')).toBeInTheDocument()
+      expect(await within(await screen.findByLabelText('Key performance indicators')).findByText('$312.40')).toBeInTheDocument()
       const scroller = container.querySelector('.ov-heatmap-scroll') as HTMLDivElement
       expect(scroller.scrollLeft).toBe(0)
 
@@ -384,7 +384,7 @@ describe('Overview', () => {
       const now = new Date()
       getOverview.mockResolvedValue(makePayload(now))
       const { container } = render(<Overview period="30days" provider="all" />)
-      expect(await screen.findByText('$312.40')).toBeInTheDocument()
+      expect(await within(await screen.findByLabelText('Key performance indicators')).findByText('$312.40')).toBeInTheDocument()
       const scroller = container.querySelector('.ov-heatmap-scroll') as HTMLDivElement
       expect(scroller.scrollLeft).toBe(200)
 
@@ -410,7 +410,7 @@ describe('Overview', () => {
 
     render(<Overview period="30days" provider="all" />)
 
-    expect(await screen.findByText('$312.40')).toBeInTheDocument()
+    expect(await within(await screen.findByLabelText('Key performance indicators')).findByText('$312.40')).toBeInTheDocument()
     const timeline = screen.getByRole('region', { name: 'Scrollable daily activity timeline' })
     const weekdayLabels = screen.getByLabelText('Weekday labels')
 
@@ -464,7 +464,7 @@ describe('Overview', () => {
     render(<Overview period="30days" provider="all" />)
 
     await waitFor(() => expect(getActReport).toHaveBeenCalled())
-    expect(await screen.findByText('$312.40')).toBeInTheDocument()
+    expect(await within(await screen.findByLabelText('Key performance indicators')).findByText('$312.40')).toBeInTheDocument()
     expect(screen.queryByText('Saved by applied fixes')).not.toBeInTheDocument()
   })
 
@@ -1107,7 +1107,7 @@ describe('Overview workflow card', () => {
 
     render(<Overview period="30days" provider="all" />)
 
-    await screen.findByText('$312.40')
+    await within(await screen.findByLabelText('Key performance indicators')).findByText('$312.40')
     expect(screen.queryByRole('heading', { name: 'Workflow' })).not.toBeInTheDocument()
   })
 
@@ -1121,7 +1121,7 @@ describe('Overview workflow card', () => {
 
     render(<Overview period="30days" provider="all" />)
 
-    await screen.findByText('$312.40')
+    await within(await screen.findByLabelText('Key performance indicators')).findByText('$312.40')
     expect(screen.queryByRole('heading', { name: 'Workflow' })).not.toBeInTheDocument()
   })
 

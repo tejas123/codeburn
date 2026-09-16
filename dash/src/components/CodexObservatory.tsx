@@ -1,3 +1,4 @@
+import { PeriodProjects } from './PeriodProjects'
 import type { Payload, Period } from '@/lib/api'
 import { buildCodexObservatory, selectDailyForPeriod } from '@/lib/codex-observatory'
 import { fmtNum, fmtTokens, formatSessionCount, usd } from '@/lib/utils'
@@ -34,6 +35,8 @@ export function CodexObservatory({ payload, period }: { payload?: Payload; perio
 
   return (
     <div className="codex-observatory">
+      <PeriodProjects key={`${period}:${new Date().toDateString()}`} label={current.label} cost={current.costAvailable === false ? Number.NaN : current.cost} tokens={current.tokensAvailable === false ? Number.NaN : current.inputTokens + current.cacheReadTokens + current.cacheWriteTokens + current.outputTokens} projects={current.topProjects} unpriced={!!current.unpricedModels?.length} />
+      <details><summary className="mb-4 cursor-pointer text-sm">History & advanced diagnostics</summary>
       <Card className="relative mb-3 overflow-hidden border-primary/20 bg-[linear-gradient(125deg,var(--card)_0%,color-mix(in_oklab,var(--primary)_8%,var(--card))_100%)] px-6 py-6">
         <div className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full border border-primary/15" />
         <div className="pointer-events-none absolute -right-2 -top-8 h-36 w-36 rounded-full border border-primary/20" />
@@ -47,7 +50,7 @@ export function CodexObservatory({ payload, period }: { payload?: Payload; perio
               See where your context goes.
             </h2>
             <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted-foreground">
-              A token-first view of your Codex sessions, model mix, cache reuse and project concentration.
+              A detailed view of your Codex sessions, model mix, cache reuse and project concentration.
             </p>
           </div>
           <div className="lg:text-right">
@@ -170,6 +173,7 @@ export function CodexObservatory({ payload, period }: { payload?: Payload; perio
       </Card>
 
       <CodexProjectExplorer period={period} periodLabel={current.label} />
+      </details>
     </div>
   )
 }

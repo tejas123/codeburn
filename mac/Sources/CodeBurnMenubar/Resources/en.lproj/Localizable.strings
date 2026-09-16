@@ -722,3 +722,40 @@
 "%1$@ · %2$@ at 80%%" = "%1$@ · %2$@ at 80%%";
 "%1$@ · %2$@ limit reached" = "%1$@ · %2$@ limit reached";
 "Quota crossings (%1$lld%% and %2$lld%%)" = "Quota crossings (%1$lld%% and %2$lld%%)";
+
+"%@ + unpriced" = "%@ + unpriced";
+"%lld projects" = "%lld projects";
+"%lld recorded threads" = "%lld recorded threads";
+"API-equivalent estimate, not your subscription charge." = "API-equivalent estimate, not your subscription charge.";
+"Back to Today" = "Back to Today";
+"Back to projects" = "Back to projects";
+"Cache writes" = "Cache writes";
+"Cached input" = "Cached input";
+"Cost by model" = "Cost by model";
+"Data updated" = "Data updated";
+"Estimated API-equivalent cost" = "Estimated API-equivalent cost";
+"Estimated API-equivalent cost · not a bill" = "Estimated API-equivalent cost · not a bill";
+"Highest cost first" = "Highest cost first";
+"History & filters" = "History & filters";
+"Model breakdown unavailable." = "Model breakdown unavailable.";
+"No project" = "No project";
+"No usage recorded for %@" = "No usage recorded for %@";
+"Output" = "Output";
+"Pricing unavailable for: %@" = "Pricing unavailable for: %@";
+"Project details are for this device. Shares use this device's cost." = "Project details are for this device. Shares use this device's cost.";
+"Projects will appear as you work. Use History to view earlier days." = "Projects will appear as you work. Use History to view earlier days.";
+"Since midnight · Local time" = "Since midnight · Local time";
+"Some usage has no pricing. The estimate includes priced usage only." = "Some usage has no pricing. The estimate includes priced usage only.";
+"Thread details are unavailable for this recorded usage." = "Thread details are unavailable for this recorded usage.";
+"Tokens unavailable" = "Tokens unavailable";
+"Uncached input" = "Uncached input";
+"Unpriced" = "Unpriced";
+"Untitled thread" = "Untitled thread";
+"ago" = "ago";
+
+"Percentages use priced usage only." = "Percentages use priced usage only.";
+"%lld local projects" = "%lld local projects";
+"%lld local recorded threads" = "%lld local recorded threads";
+"Project and thread details cover this device only." = "Project and thread details cover this device only.";
+
+"1 recorded thread" = "1 recorded thread";

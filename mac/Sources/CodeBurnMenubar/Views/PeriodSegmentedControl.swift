@@ -12,7 +12,7 @@ struct PeriodSegmentedControl: View {
                     store.switchTo(period: period)
                 } label: {
                     Text(period.displayLabel)
-                        .font(.system(size: 11, weight: .medium))
+                        .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(isActive ? AnyShapeStyle(.primary) : AnyShapeStyle(.secondary))
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 4)
@@ -139,7 +139,7 @@ private struct CalendarPopover: View {
                     Button(L("Clear")) {
                         pending = []
                     }
-                    .font(.system(size: 11, weight: .medium))
+                    .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(.secondary)
                     .buttonStyle(.plain)
                 }

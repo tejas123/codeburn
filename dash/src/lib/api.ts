@@ -1,3 +1,4 @@
+import type { PeriodProject } from '../components/PeriodProjects'
 export type Period = 'today' | 'week' | '30days' | 'month' | 'all' | 'lifetime'
 
 export type ModelDay = {
@@ -36,6 +37,8 @@ export type GranularHistory = {
 }
 
 export type Current = {
+  costAvailable?: boolean
+  tokensAvailable?: boolean
   label: string
   cost: number
   calls: number
@@ -51,7 +54,8 @@ export type Current = {
   topActivities: Array<{ name: string; cost: number; turns: number; oneShotRate: number | null }>
   topModels: Array<{ name: string; cost: number; calls: number; savingsUSD: number }>
   providers: Record<string, number>
-  topProjects: Array<{ name: string; cost: number; sessions: number; avgCostPerSession?: number; sessionCountBasis?: 'identity' | 'partial' }>
+  topProjects: Array<PeriodProject & { sessions: number; avgCostPerSession?: number; sessionCountBasis?: 'identity' | 'partial' }>
+  unpricedModels?: Array<{ model: string; calls: number; tokens: number }>
   tools: Array<{ name: string; calls: number }>
   subagents: Array<{ name: string; calls: number; cost: number }>
   skills: Array<{ name: string; turns: number; cost: number }>
@@ -133,6 +137,8 @@ function normalizePayload(p?: Payload): Payload | undefined {
     ...(p.hydration ? { hydration: p.hydration } : {}),
     current: {
       label: c.label ?? '',
+      costAvailable: Number.isFinite(c.cost),
+      tokensAvailable: Number.isFinite(c.inputTokens) && Number.isFinite(c.outputTokens),
       cost: c.cost ?? 0,
       calls: c.calls ?? 0,
       sessions: c.sessions ?? 0,
@@ -147,6 +153,7 @@ function normalizePayload(p?: Payload): Payload | undefined {
       topModels: c.topModels ?? [],
       providers: c.providers ?? {},
       topProjects: c.topProjects ?? [],
+      unpricedModels: c.unpricedModels,
       tools: c.tools ?? [],
       subagents: c.subagents ?? [],
       skills: c.skills ?? [],

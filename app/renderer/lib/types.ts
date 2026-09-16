@@ -185,6 +185,11 @@ export type MenubarPayload = {
     // providers from detected-but-idle providers when present.
     providerDetails?: Array<{ id: string; label: string; cost: number; calls?: number; hasUsage?: boolean; sessions?: number; sessionCountBasis?: 'identity' | 'partial' }>
     topProjects: Array<{
+      inputTokens?: number
+      outputTokens?: number
+      cacheReadTokens?: number
+      cacheWriteTokens?: number
+      unpricedModels?: string[]
       id?: string
       name: string
       cost: number
@@ -193,6 +198,10 @@ export type MenubarPayload = {
       avgCostPerSession?: number
       sessionCountBasis?: 'identity' | 'partial'
       sessionDetails: Array<{
+        title?: string
+        cacheReadTokens?: number
+        cacheWriteTokens?: number
+        unpricedModels?: string[]
         cost: number
         savingsUSD: number
         calls: number

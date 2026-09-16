@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { PeriodProjects } from './components/PeriodProjects'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import {
@@ -115,6 +116,8 @@ function DeviceView({ payload, isRemote, unit }: { payload?: Payload; isRemote: 
 
   return (
     <>
+      {c && <PeriodProjects key={`${c.label}:${new Date().toDateString()}`} label={c.label} cost={c.costAvailable === false ? Number.NaN : c.cost} tokens={c.tokensAvailable === false ? Number.NaN : c.inputTokens + c.cacheReadTokens + c.cacheWriteTokens + c.outputTokens} projects={c.topProjects} unpriced={!!c.unpricedModels?.length} />}
+      <details><summary className="mb-4 cursor-pointer text-sm">History & advanced diagnostics</summary>
       <Card className="mb-3 overflow-hidden">
         <div className="flex items-end justify-between px-5 pt-4">
           <div>
@@ -291,6 +294,7 @@ function DeviceView({ payload, isRemote, unit }: { payload?: Payload; isRemote: 
           rows={(c?.tools ?? []).slice(0, 14).map((t) => ({ name: t.name, calls: fmtNum(t.calls) }))}
         />
       </Panel>
+      </details>
     </>
   )
 }
@@ -511,17 +515,6 @@ export function App() {
   const primary = viewing ?? local
   const c0 = primary?.payload?.current
 
-  // #1111: the dashboard opens on Today and falls back to 7 days once, when the
-  // first local payload shows today still has no sessions. Disarmed by the
-  // period picker, so it can never move a period the user chose.
-  const autoPeriod = useRef(true)
-  useEffect(() => {
-    const sessions = local?.payload?.current?.sessions
-    if (!autoPeriod.current || sessions === undefined) return
-    autoPeriod.current = false
-    if (period === 'today' && sessions === 0) setPeriod('week')
-  }, [local, period])
-
   const providerOptions = useMemo(
     () =>
       c0
@@ -617,7 +610,7 @@ export function App() {
                 <button
                   key={p.key}
                   type="button"
-                  onClick={() => { autoPeriod.current = false; setPeriod(p.key) }}
+                  onClick={() => { setPeriod(p.key) }}
                   className={cn(
                     'rounded-[5px] px-3 py-1 text-xs font-medium whitespace-nowrap transition-colors max-md:inline-flex max-md:min-h-9 max-md:items-center max-md:justify-center',
                     period === p.key ? 'bg-active-primary text-foreground shadow-sm' : 'text-tertiary-foreground hover:text-foreground',

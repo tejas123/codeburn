@@ -93,6 +93,9 @@ enum CodeburnCLI {
     }
 
     private static func installedArgv() -> [String] {
+        if let bundled = bundledArgv(resources: Bundle.main.resourceURL) {
+            return bundled
+        }
         if let persisted = persistedCLIPath(), isSafe(persisted), FileManager.default.isExecutableFile(atPath: persisted) {
             return [persisted]
         }
@@ -107,6 +110,18 @@ enum CodeburnCLI {
             }
         }
         return ["codeburn"]
+    }
+
+    /// Distribution builds carry both Node and the matching CLI inside the signed app.
+    /// Pass paths as separate argv entries so relocated apps and spaces work without a shell.
+    static func bundledArgv(resources: URL?) -> [String]? {
+        guard let resources else { return nil }
+        let runtime = resources.appendingPathComponent("cli/node").path
+        let entrypoint = resources.appendingPathComponent("cli/dist/cli.js").path
+        guard FileManager.default.isExecutableFile(atPath: runtime),
+              FileManager.default.isReadableFile(atPath: entrypoint)
+        else { return nil }
+        return [runtime, entrypoint]
     }
 
     private static func persistedCLIPath() -> String? {

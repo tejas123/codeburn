@@ -276,6 +276,12 @@ struct ReworkedFileEntry: Codable, Sendable {
     let edits: Int
 }
 
+struct UnpricedModelEntry: Codable, Sendable {
+    let model: String
+    let calls: Int
+    let tokens: Int
+}
+
 struct CurrentBlock: Codable, Sendable {
     let label: String
     let cost: Double
@@ -316,6 +322,9 @@ struct CurrentBlock: Codable, Sendable {
     /// only). Optional so payloads from older CLIs still decode; absent or
     /// empty -> the Pull requests section hides.
     var pullRequests: PullRequestsBlock? = nil
+    var cacheReadTokens: Int? = nil
+    var cacheWriteTokens: Int? = nil
+    var unpricedModels: [UnpricedModelEntry] = []
 }
 
 struct PullRequestsBlock: Codable, Sendable {
@@ -335,7 +344,7 @@ extension CurrentBlock {
              cacheHitPercent, codexCredits, topActivities, topModels, localModelSavings, providers, providerDetails, topProjects,
              modelEfficiency, topSessions, retryTax, routingWaste,
              tools, skills, subagents, mcpServers,
-             workflow, topReworkedFiles, pullRequests
+             workflow, topReworkedFiles, pullRequests, cacheReadTokens, cacheWriteTokens, unpricedModels
     }
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
@@ -366,6 +375,9 @@ extension CurrentBlock {
         workflow = try c.decodeIfPresent(WorkflowBlock.self, forKey: .workflow)
         topReworkedFiles = try c.decodeIfPresent([ReworkedFileEntry].self, forKey: .topReworkedFiles) ?? []
         pullRequests = try c.decodeIfPresent(PullRequestsBlock.self, forKey: .pullRequests)
+        cacheReadTokens = try c.decodeIfPresent(Int.self, forKey: .cacheReadTokens)
+        cacheWriteTokens = try c.decodeIfPresent(Int.self, forKey: .cacheWriteTokens)
+        unpricedModels = try c.decodeIfPresent([UnpricedModelEntry].self, forKey: .unpricedModels) ?? []
     }
 }
 
@@ -538,11 +550,15 @@ struct SessionModelEntry: Codable, Sendable {
 
 struct SessionDetailEntry: Codable, Sendable {
     let title: String?
+    let sessionId: String?
+    let provider: String?
     let cost: Double
     let savingsUSD: Double
     let calls: Int
     let inputTokens: Int
     let cacheReadTokens: Int?
+    let cacheWriteTokens: Int?
+    let unpricedModels: [String]
     let outputTokens: Int
     let date: String
     let models: [SessionModelEntry]
@@ -550,18 +566,22 @@ struct SessionDetailEntry: Codable, Sendable {
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         title = try c.decodeIfPresent(String.self, forKey: .title)
+        sessionId = try c.decodeIfPresent(String.self, forKey: .sessionId)
+        provider = try c.decodeIfPresent(String.self, forKey: .provider)
         cost = try c.decode(Double.self, forKey: .cost)
         savingsUSD = try c.decodeIfPresent(Double.self, forKey: .savingsUSD) ?? 0
         calls = try c.decode(Int.self, forKey: .calls)
         inputTokens = try c.decode(Int.self, forKey: .inputTokens)
         cacheReadTokens = try c.decodeIfPresent(Int.self, forKey: .cacheReadTokens)
+        cacheWriteTokens = try c.decodeIfPresent(Int.self, forKey: .cacheWriteTokens)
+        unpricedModels = try c.decodeIfPresent([String].self, forKey: .unpricedModels) ?? []
         outputTokens = try c.decode(Int.self, forKey: .outputTokens)
         date = try c.decode(String.self, forKey: .date)
         models = try c.decodeIfPresent([SessionModelEntry].self, forKey: .models) ?? []
     }
 
     private enum CodingKeys: String, CodingKey {
-        case title, cost, savingsUSD, calls, inputTokens, cacheReadTokens, outputTokens, date, models
+        case title, sessionId, provider, cost, savingsUSD, calls, inputTokens, cacheReadTokens, cacheWriteTokens, unpricedModels, outputTokens, date, models
     }
 }
 
@@ -573,6 +593,8 @@ struct ProjectEntry: Codable, Sendable {
     let sessions: Int
     let inputTokens: Int?
     let cacheReadTokens: Int?
+    let cacheWriteTokens: Int?
+    let unpricedModels: [String]
     let outputTokens: Int?
     let avgCostPerSession: Double?
     let sessionCountBasis: String?
@@ -587,6 +609,8 @@ struct ProjectEntry: Codable, Sendable {
         sessions = try c.decode(Int.self, forKey: .sessions)
         inputTokens = try c.decodeIfPresent(Int.self, forKey: .inputTokens)
         cacheReadTokens = try c.decodeIfPresent(Int.self, forKey: .cacheReadTokens)
+        cacheWriteTokens = try c.decodeIfPresent(Int.self, forKey: .cacheWriteTokens)
+        unpricedModels = try c.decodeIfPresent([String].self, forKey: .unpricedModels) ?? []
         outputTokens = try c.decodeIfPresent(Int.self, forKey: .outputTokens)
         avgCostPerSession = try c.decodeIfPresent(Double.self, forKey: .avgCostPerSession)
         sessionCountBasis = try c.decodeIfPresent(String.self, forKey: .sessionCountBasis)
@@ -594,7 +618,7 @@ struct ProjectEntry: Codable, Sendable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, name, cost, savingsUSD, sessions, inputTokens, cacheReadTokens, outputTokens, avgCostPerSession, sessionCountBasis, sessionDetails
+        case id, name, cost, savingsUSD, sessions, inputTokens, cacheReadTokens, cacheWriteTokens, unpricedModels, outputTokens, avgCostPerSession, sessionCountBasis, sessionDetails
     }
 }
 

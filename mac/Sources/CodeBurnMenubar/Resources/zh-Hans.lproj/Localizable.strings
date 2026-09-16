@@ -713,3 +713,40 @@
 "%1$@ · %2$@ at 80%%" = "%1$@ · %2$@ 已达 80%%";
 "%1$@ · %2$@ limit reached" = "%1$@ · %2$@ 已达上限";
 "Quota crossings (%1$lld%% and %2$lld%%)" = "配额跨越（%1$lld%% 与 %2$lld%%）";
+
+"%@ + unpriced" = "%@ + 价格未知部分";
+"%lld projects" = "%lld 个项目";
+"%lld recorded threads" = "%lld 个已记录对话";
+"API-equivalent estimate, not your subscription charge." = "API 等值费用估算，并非订阅费用。";
+"Back to Today" = "返回今天";
+"Back to projects" = "返回项目";
+"Cache writes" = "缓存写入";
+"Cached input" = "缓存输入";
+"Cost by model" = "各模型费用";
+"Data updated" = "数据更新于";
+"Estimated API-equivalent cost" = "API 等值费用估算";
+"Estimated API-equivalent cost · not a bill" = "API 等值费用估算 · 非账单";
+"Highest cost first" = "按费用从高到低";
+"History & filters" = "历史与筛选";
+"Model breakdown unavailable." = "模型明细不可用。";
+"No project" = "无项目";
+"No usage recorded for %@" = "%@ 没有使用记录";
+"Output" = "输出";
+"Pricing unavailable for: %@" = "以下模型价格不可用：%@";
+"Project details are for this device. Shares use this device's cost." = "项目详情仅涵盖本设备，占比基于本设备费用。";
+"Projects will appear as you work. Use History to view earlier days." = "工作后项目将显示在此处。可在历史记录中查看先前日期。";
+"Since midnight · Local time" = "自午夜起 · 本地时间";
+"Some usage has no pricing. The estimate includes priced usage only." = "部分使用量没有价格，估算仅包含已知价格的使用量。";
+"Thread details are unavailable for this recorded usage." = "此使用记录没有可用的对话详情。";
+"Tokens unavailable" = "令牌数不可用";
+"Uncached input" = "未缓存输入";
+"Unpriced" = "价格未知";
+"Untitled thread" = "未命名对话";
+"ago" = "前";
+
+"Percentages use priced usage only." = "百分比仅基于已知价格的使用量。";
+"%lld local projects" = "%lld 个本地项目";
+"%lld local recorded threads" = "%lld 个本地已记录对话";
+"Project and thread details cover this device only." = "项目与对话详情仅涵盖本设备。";
+
+"1 recorded thread" = "1 个已记录对话";

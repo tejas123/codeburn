@@ -13,7 +13,7 @@ private let statusPayloadRefreshWatchdogSeconds: TimeInterval = 60
 private let refreshRateLimitSeconds: TimeInterval = 5
 private let interactiveQuotaRefreshFloorSeconds: TimeInterval = 30
 private let statusItemWidth: CGFloat = NSStatusItem.variableLength
-private let popoverWidth: CGFloat = 360
+private let popoverWidth: CGFloat = 400
 private let popoverHeight: CGFloat = 660
 private let menubarTitleFontSize: CGFloat = 13
 
@@ -1631,6 +1631,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate, NSM
             // closes. The popover's window takes keyboard focus on its own
             // via makeKeyAndOrderFront, which is enough for keystrokes to
             // reach the SwiftUI content.
+            store.selectedInsight = .projects
+            if store.selectedPeriod != .today || store.isDayMode {
+                store.switchTo(period: .today)
+            }
             if popover.contentViewController == nil {
                 popover.contentViewController = makePopoverContent()
             }

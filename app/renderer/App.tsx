@@ -292,12 +292,13 @@ export function App() {
 
 const NAV_SECTIONS = new Set<string>(['overview', 'sessions', 'pullRequests', 'spend', 'optimize', 'models', 'compare', 'plans', 'settings', 'plugins'])
 
-/** Boot position: the best-effort restart snapshot when it is still valid
+/** Without an explicit default, every launch starts on Today. Otherwise restore
+ *  the best-effort restart snapshot when it is still valid
  *  (section and period re-validated; a stale drawer revalidates itself once
  *  the destination data lands), else the plain defaults. */
 function initialNavState(): NavState {
   const restored = readPersistedNavState()
-  if (restored
+  if (savedPeriod() !== null && restored
     && NAV_SECTIONS.has(restored.section)
     && isPeriod(restored.period)) {
     return { ...restored, range: restored.range ?? null, filters: restored.filters ?? EMPTY_FILTERS }
@@ -449,17 +450,6 @@ function AppMain() {
   // every section to spawn its own read behind the still-running parse, and each
   // one then died on its own timeout. Stay gated (and keep the splash) until the
   // hydration actually settles.
-  // #1111: with no persisted default the app opens on Today and falls back to 7
-  // days once, when the first payload shows today has no sessions yet. Disarmed
-  // by the period picker, so it can never move a period the user chose.
-  const autoPeriod = useRef(savedPeriod() === null)
-  useEffect(() => {
-    const sessions = overview.data?.current.sessions
-    if (!autoPeriod.current || sessions === undefined) return
-    autoPeriod.current = false
-    if (period === 'today' && sessions === 0) commitNav({ period: 'week', visibleCount: INITIAL_VISIBLE })
-  }, [overview.data, period])
-
   const overviewCold = isColdHydrating(overview.error)
   const [ready, setReady] = useState(false)
   useEffect(() => {
@@ -795,7 +785,6 @@ function AppMain() {
 
   const onPeriodChange = (value: string) => {
     if (isPeriod(value)) {
-      autoPeriod.current = false
       commitNav({ period: value, range: null, visibleCount: INITIAL_VISIBLE })
     }
   }
