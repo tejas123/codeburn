@@ -23,6 +23,7 @@ import { DeviceSearchModal } from '@/components/DeviceSearchModal'
 import { ContextExplorer } from '@/components/ContextExplorer'
 import { WorkflowPanel, hasWorkflowContent } from '@/components/WorkflowPanel'
 import { Punchcard } from '@/components/Punchcard'
+import { CodexObservatory } from '@/components/CodexObservatory'
 
 const n = (v: number | undefined): number => v ?? 0
 
@@ -450,7 +451,7 @@ function ThemeToggle() {
 }
 
 export function App() {
-  const [page, setPage] = useState<'usage' | 'context'>('usage')
+  const [page, setPage] = useState<'usage' | 'codex' | 'context'>('usage')
   const [period, setPeriod] = useState<Period>('today')
   const [provider, setProvider] = useState('all')
   const [view, setView] = useState<string>('all')
@@ -462,11 +463,12 @@ export function App() {
   const [responded, setResponded] = useState<Set<string>>(new Set())
 
   const qc = useQueryClient()
+  const activeProvider = page === 'codex' ? 'codex' : provider
 
   const { data, isError, error, refetch } = useQuery({
-    queryKey: ['devices', period, provider],
-    queryFn: () => fetchDevices(period, provider),
-    initialData: () => (period === 'today' && provider === 'all' ? window.__CODEBURN_BOOTSTRAP__ : undefined),
+    queryKey: ['devices', period, activeProvider],
+    queryFn: () => fetchDevices(period, activeProvider),
+    initialData: () => (period === 'today' && activeProvider === 'all' ? window.__CODEBURN_BOOTSTRAP__ : undefined),
     // Bootstrap paints instantly but is stale by definition, so refetch at once
     // (the default 30s staleTime would otherwise hide a live peer until then).
     initialDataUpdatedAt: 0,
@@ -591,7 +593,7 @@ export function App() {
           </div>
 
           <div className="ml-6 flex shrink-0 rounded-md border border-border bg-interactive-secondary p-0.5 max-md:ml-2">
-            {(['usage', 'context'] as const).map((pg) => (
+            {(['usage', 'codex', 'context'] as const).map((pg) => (
               <button
                 key={pg}
                 type="button"
@@ -601,14 +603,14 @@ export function App() {
                   page === pg ? 'bg-active-primary text-foreground shadow-sm' : 'text-tertiary-foreground hover:text-foreground',
                 )}
               >
-                {pg === 'usage' ? 'Usage' : 'Context'}
+                {pg === 'usage' ? 'Usage' : pg === 'codex' ? 'Codex Usage' : 'Context'}
               </button>
             ))}
           </div>
 
           {/* All widths: min-w-0 + overflow-x-auto contain mid-width overflow. Below md: full-width second row so ~390px isn't a ~22px clip. */}
           <div className="ml-auto flex min-w-0 items-center gap-2 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden max-md:ml-0 max-md:w-full max-md:basis-full">
-            {page === 'usage' && (
+            {page !== 'context' && (
             <>
             <div className="flex shrink-0 rounded-md border border-border bg-interactive-secondary p-0.5">
               {PERIODS.map((p) => (
@@ -640,18 +642,20 @@ export function App() {
                 </button>
               ))}
             </div>
-            <select
-              value={provider}
-              onChange={(e) => setProvider(e.target.value)}
-              className="shrink-0 rounded-md border border-border bg-card px-3 py-1.5 text-xs text-foreground outline-none max-md:min-h-9"
-            >
-              <option value="all">All tools</option>
-              {providerOptions.map((p) => (
-                <option key={p} value={p}>
-                  {p}
-                </option>
-              ))}
-            </select>
+            {page === 'usage' && (
+              <select
+                value={provider}
+                onChange={(e) => setProvider(e.target.value)}
+                className="shrink-0 rounded-md border border-border bg-card px-3 py-1.5 text-xs text-foreground outline-none max-md:min-h-9"
+              >
+                <option value="all">All tools</option>
+                {providerOptions.map((p) => (
+                  <option key={p} value={p}>
+                    {p}
+                  </option>
+                ))}
+              </select>
+            )}
             </>
             )}
             <ThemeToggle />
@@ -687,7 +691,7 @@ export function App() {
                 <path d="M4 4l8 8M12 4l-8 8" />
               </svg>
             </button>
-            {page === 'usage' && (
+            {page !== 'context' && (
             <>
             <div className="flex flex-col gap-1">
               <p className="mb-1 px-2.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-heading">Devices</p>
@@ -797,21 +801,25 @@ export function App() {
 
           <main className="min-w-0 flex-1 overflow-y-auto pr-0.5">
             <div className="mb-3 flex items-baseline justify-between">
-              <h1 className="font-display text-xl tracking-tight text-foreground">{page === 'context' ? 'Context' : viewTitle}</h1>
-              <span className="text-xs text-tertiary-foreground">{page === 'usage' ? label : ''}</span>
+              <h1 className="font-display text-xl tracking-tight text-foreground">
+                {page === 'context' ? 'Context' : page === 'codex' ? 'Codex Usage' : viewTitle}
+              </h1>
+              <span className="text-xs text-tertiary-foreground">{page !== 'context' ? label : ''}</span>
             </div>
 
-            {page === 'usage' && <IndexingNotice payload={primary?.payload} />}
+            {page !== 'context' && <IndexingNotice payload={primary?.payload} />}
 
             {page === 'context' ? (
               <ContextExplorer />
+            ) : page === 'codex' ? (
+              <CodexObservatory payload={primary?.payload} period={period} />
             ) : showCombined ? (
               <CombinedView devices={devices} unit={unit} />
             ) : (
               <DeviceView payload={primary?.payload} isRemote={!!viewing && !viewing.local} unit={unit} />
             )}
 
-            {page === 'usage' && isError && (
+            {page !== 'context' && isError && (
               <div className="mt-4 text-sm text-tertiary-foreground">Failed to load: {String((error as Error)?.message)}</div>
             )}
           </main>
